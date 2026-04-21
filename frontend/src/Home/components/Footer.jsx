@@ -1,0 +1,36 @@
+import React from 'react';
+import logo from '../../assets/logo.png';
+
+export default function Footer() {
+  return (
+    <footer className="bg-black py-12 border-t border-white/5 relative z-20">
+      <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center">
+        <div className="mb-6 md:mb-0">
+          <div className="flex items-center">
+            <img src={logo} alt="Logo" className="w-16 h-16" />
+          <div className="text-2xl font-bold tracking-tighter">
+            <span className="text-white">Club</span>
+            <span className="text-[#00f3ff]">Arena</span>
+            <span className="text-[#bc13fe]">X</span>
+          </div>
+          </div>
+          <p className="text-gray-500 text-sm">Elevate your cricket management.</p>
+        </div>
+        <div className="flex space-x-8 text-gray-500 text-sm">
+          <a href="#home" className="hover:text-white transition-colors">Home</a>
+          <a href="#products" className="hover:text-white transition-colors">Features</a>
+          <a href="#analytics" className="hover:text-white transition-colors">Analytics</a>
+          <a href="#contact" className="hover:text-white transition-colors">Contact</a>
+        </div>
+        <div className="mt-6 md:mt-0 text-gray-500 text-sm flex space-x-6">
+          <a href="#" className="hover:text-white transition-colors">Privacy</a>
+          <a href="#" className="hover:text-white transition-colors">Terms</a>
+          <a href="#" className="hover:text-white transition-colors">Twitter</a>
+        </div>
+      </div>
+      <div className="text-center text-gray-600 text-xs mt-8">
+        © {new Date().getFullYear()} ClubArenaX. All rights reserved.
+      </div>
+    </footer>
+  );
+}
