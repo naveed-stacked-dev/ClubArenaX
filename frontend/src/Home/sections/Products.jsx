@@ -61,7 +61,7 @@ export default function Products() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-16 will-change-transform"
         >
           <p className="text-[#00f3ff] font-medium tracking-widest uppercase text-sm mb-3">Features</p>
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
@@ -83,7 +83,7 @@ export default function Products() {
               initial="hidden"
               animate={isInView ? 'visible' : 'hidden'}
               variants={cardVariants}
-              className="group relative bg-white/[0.03] backdrop-blur-md border border-white/[0.06] rounded-2xl p-6 hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300 cursor-pointer"
+              className="group relative bg-white/[0.03] backdrop-blur-md border border-white/[0.06] rounded-2xl p-6 hover:bg-white/[0.06] hover:border-white/[0.12] transition-all duration-300 cursor-pointer will-change-transform"
             >
               {/* Hover glow */}
               <div className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${product.gradient} opacity-0 group-hover:opacity-[0.06] transition-opacity duration-300`} />

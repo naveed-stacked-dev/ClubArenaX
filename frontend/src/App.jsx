@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useScroll } from 'framer-motion';
+import { ReactLenis } from 'lenis/react';
 
 import Navbar from './Home/components/Navbar';
 import Footer from './Home/components/Footer';
@@ -15,7 +16,7 @@ import Contact from './Home/sections/Contact';
 
 export default function App() {
   const { scrollYProgress } = useScroll();
-  const [ballProgress, setBallProgress] = useState(0);
+  const scrollProgressRef = useRef(0);
   const [isMobile, setIsMobile] = useState(false);
 
   // Track mobile for disabling heavy 3D stuff
@@ -26,18 +27,20 @@ export default function App() {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // Subscribe to scrollYProgress and pass as number to FloatingBall
+  // Sync scroll without causing React re-renders!
   useEffect(() => {
-    const unsubscribe = scrollYProgress.on('change', (v) => setBallProgress(v));
-    return unsubscribe;
+    return scrollYProgress.on('change', (v) => {
+      scrollProgressRef.current = v;
+    });
   }, [scrollYProgress]);
 
   return (
-    <div className="relative bg-[#0a0a0c] text-white min-h-screen overflow-x-hidden">
-      <Navbar />
+    <ReactLenis root>
+      <div className="relative bg-[#0a0a0c] text-white min-h-screen overflow-x-hidden">
+        <Navbar />
 
-      {/* Global Floating Ball Canvas — SINGLE ball instance (desktop only) */}
-      {!isMobile && <FloatingBall scrollProgress={ballProgress} />}
+        {/* Global Floating Ball Canvas — SINGLE ball instance (desktop only) */}
+        {!isMobile && <FloatingBall scrollProgressRef={scrollProgressRef} />}
 
       <main>
         <Hero />
@@ -50,6 +53,7 @@ export default function App() {
       </main>
 
       <Footer />
-    </div>
+      </div>
+    </ReactLenis>
   );
 }

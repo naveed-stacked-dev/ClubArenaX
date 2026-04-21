@@ -1,14 +1,16 @@
 import React, { useRef, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { Preload } from '@react-three/drei';
 import BallModel from '../three/BallModel';
 import BatsmanModel from '../three/BatsmanModel';
 import { getBallPosition, getBatsmanSwing } from '../utils/ballTrajectory';
 
-function GlobalBallScene({ scrollProgress = 0 }) {
+function GlobalBallScene({ scrollProgressRef }) {
   const ballRef = useRef();
   const batsmanRef = useRef();
 
   useFrame(() => {
+    const scrollProgress = scrollProgressRef?.current || 0;
     // ── Ball ─────────────────────────────────────────────
     if (ballRef.current) {
       const { x, y, z, rotationX, rotationZ } = getBallPosition(scrollProgress);
@@ -90,7 +92,7 @@ function GlobalBallScene({ scrollProgress = 0 }) {
   );
 }
 
-export default function FloatingBall({ scrollProgress = 0 }) {
+export default function FloatingBall({ scrollProgressRef }) {
   return (
     <div className="canvas-container">
       <Canvas
@@ -100,7 +102,8 @@ export default function FloatingBall({ scrollProgress = 0 }) {
         style={{ background: 'transparent' }}
       >
         <Suspense fallback={null}>
-          <GlobalBallScene scrollProgress={scrollProgress} />
+          <GlobalBallScene scrollProgressRef={scrollProgressRef} />
+          <Preload all />
         </Suspense>
       </Canvas>
     </div>

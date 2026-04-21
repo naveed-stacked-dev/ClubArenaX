@@ -32,14 +32,14 @@ export default function Hero() {
 
         {/* Right — Text Content */}
         <motion.div
-          className="order-1 lg:order-2"
+          className="order-1 lg:order-2 will-change-transform"
           style={{ y: textY, opacity }}
         >
           <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="text-[#00f3ff] font-medium tracking-widest uppercase text-sm mb-4"
+            className="text-[#00f3ff] font-medium tracking-widest uppercase text-sm mb-4 will-change-transform"
           >
             Next-Gen Cricket Platform
           </motion.p>
@@ -48,7 +48,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6"
+            className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6 will-change-transform"
           >
             Manage Cricket{' '}
             <span className="bg-gradient-to-r from-[#00f3ff] to-[#bc13fe] bg-clip-text text-transparent">
@@ -60,7 +60,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.6 }}
-            className="text-gray-400 text-lg mb-8 max-w-md"
+            className="text-gray-400 text-lg mb-8 max-w-md will-change-transform"
           >
             From live scoring to tournament management and deep analytics — 
             ClubArenaX is the all-in-one platform powering modern cricket.
@@ -70,7 +70,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8 }}
-            className="flex flex-wrap gap-4"
+            className="flex flex-wrap gap-4 will-change-transform"
           >
             <button className="bg-gradient-to-r from-[#00f3ff] to-[#bc13fe] text-black font-semibold px-8 py-3 rounded-full shadow-[0_0_20px_rgba(0,243,255,0.3)] hover:shadow-[0_0_30px_rgba(188,19,254,0.5)] transition-all hover:scale-105">
               Get Started Free
@@ -85,7 +85,7 @@ export default function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2 }}
-            className="flex gap-8 mt-12"
+            className="flex gap-8 mt-12 will-change-opacity"
           >
             {[
               { value: '50K+', label: 'Matches' },
