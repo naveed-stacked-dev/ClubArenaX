@@ -1,0 +1,300 @@
+import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAppContext } from "@/hooks/useAppContext";
+import leagueService from "@/services/leagueService";
+import tournamentService from "@/services/tournamentService";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Swords, Plus, MoreHorizontal, Pencil, CalendarDays, Loader2, Search, Shield, ListOrdered } from "lucide-react";
+
+const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
+const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
+
+const FORMATS = ["round-robin", "knockout", "group-stage"];
+const STATUSES = ["upcoming", "ongoing", "completed"];
+
+export default function TournamentsPage() {
+  const { user } = useAppContext();
+  const [leagues, setLeagues] = useState([]);
+  const [selectedLeague, setSelectedLeague] = useState(null);
+  const [tournaments, setTournaments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [leagueLoading, setLeagueLoading] = useState(true);
+  const [search, setSearch] = useState("");
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [showPointsTable, setShowPointsTable] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [pointsTable, setPointsTable] = useState([]);
+  const [pointsLoading, setPointsLoading] = useState(false);
+
+  const [form, setForm] = useState({ name: "", format: "round-robin", startDate: "", endDate: "" });
+
+  useEffect(() => {
+    const fetch = async () => {
+      try {
+        const res = user?.role === "superadmin" ? await leagueService.adminGetAll() : await leagueService.getAll();
+        const data = res.data?.data || res.data?.leagues || res.data || [];
+        setLeagues(Array.isArray(data) ? data : []);
+        if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+      } catch { /* interceptor */ }
+      finally { setLeagueLoading(false); }
+    };
+    fetch();
+  }, [user]);
+
+  const fetchTournaments = useCallback(async () => {
+    if (!selectedLeague) return;
+    setLoading(true);
+    try {
+      const res = await tournamentService.getByLeague(selectedLeague);
+      const data = res.data?.data || res.data?.tournaments || res.data || [];
+      setTournaments(Array.isArray(data) ? data : []);
+    } catch { /* interceptor */ }
+    finally { setLoading(false); }
+  }, [selectedLeague]);
+
+  useEffect(() => { fetchTournaments(); }, [fetchTournaments]);
+
+  const handleCreate = async () => {
+    if (!form.name.trim()) return toast.error("Tournament name required");
+    setSubmitting(true);
+    try {
+      await tournamentService.create({ ...form, league: selectedLeague });
+      toast.success("Tournament created");
+      setShowCreate(false);
+      setForm({ name: "", format: "round-robin", startDate: "", endDate: "" });
+      fetchTournaments();
+    } catch { /* interceptor */ } finally { setSubmitting(false); }
+  };
+
+  const handleEdit = async () => {
+    setSubmitting(true);
+    try {
+      await tournamentService.update(selected._id || selected.id, form);
+      toast.success("Tournament updated");
+      setShowEdit(false);
+      fetchTournaments();
+    } catch { /* interceptor */ } finally { setSubmitting(false); }
+  };
+
+  const handleGenerateFixtures = async (tournament) => {
+    try {
+      await tournamentService.generateFixtures(tournament._id || tournament.id, {});
+      toast.success("Fixtures generated successfully");
+      fetchTournaments();
+    } catch { /* interceptor */ }
+  };
+
+  const openPointsTable = async (tournament) => {
+    setSelected(tournament);
+    setShowPointsTable(true);
+    setPointsLoading(true);
+    try {
+      const res = await tournamentService.getPointsTable(tournament._id || tournament.id);
+      setPointsTable(res.data?.data || res.data || []);
+    } catch { setPointsTable([]); }
+    finally { setPointsLoading(false); }
+  };
+
+  const openEdit = (t) => {
+    setSelected(t);
+    setForm({
+      name: t.name || "",
+      format: t.format || "round-robin",
+      startDate: t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : "",
+      endDate: t.endDate ? new Date(t.endDate).toISOString().split('T')[0] : ""
+    });
+    setShowEdit(true);
+  };
+
+  const filtered = tournaments.filter((t) => (t.name || "").toLowerCase().includes(search.toLowerCase()));
+
+  const getStatusBadge = (status) => {
+    if (status === "ongoing") return <Badge variant="destructive" className="animate-pulse">Ongoing</Badge>;
+    if (status === "completed") return <Badge variant="success">Completed</Badge>;
+    return <Badge variant="secondary">Upcoming</Badge>;
+  };
+
+  return (
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+      <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Swords className="w-6 h-6 text-amber-500" /> Tournaments</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage tournaments, formats, and fixtures</p>
+        </div>
+        <Button onClick={() => { setForm({ name: "", format: "round-robin", startDate: "", endDate: "" }); setShowCreate(true); }} disabled={!selectedLeague} className="bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:opacity-90">
+          <Plus className="w-4 h-4 mr-2" /> Create Tournament
+        </Button>
+      </motion.div>
+
+      <motion.div variants={item} className="flex flex-col sm:flex-row gap-3">
+        <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
+          <SelectTrigger className="w-full sm:w-[260px]"><SelectValue placeholder="Select a league" /></SelectTrigger>
+          <SelectContent>{leagues.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}</SelectContent>
+        </Select>
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input placeholder="Search tournaments..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+        </div>
+      </motion.div>
+
+      <motion.div variants={item}>
+        <Card>
+          <CardContent className="p-0">
+            {leagueLoading || loading ? (
+              <div className="p-6 space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}</div>
+            ) : !selectedLeague ? (
+              <div className="text-center py-16 text-muted-foreground"><Shield className="w-12 h-12 mx-auto mb-3 opacity-20" /><p className="font-medium">Select a league</p></div>
+            ) : filtered.length === 0 ? (
+              <div className="text-center py-16 text-muted-foreground"><Swords className="w-12 h-12 mx-auto mb-3 opacity-20" /><p className="font-medium">No tournaments found</p></div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tournament</TableHead>
+                    <TableHead>Format</TableHead>
+                    <TableHead>Dates</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-12"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((t) => (
+                    <TableRow key={t._id || t.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
+                            <Swords className="w-4 h-4 text-amber-500" />
+                          </div>
+                          <span className="font-medium text-sm">{t.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell><Badge variant="outline" className="capitalize text-xs">{t.format?.replace('-', ' ')}</Badge></TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {t.startDate ? new Date(t.startDate).toLocaleDateString() : "?"} - {t.endDate ? new Date(t.endDate).toLocaleDateString() : "?"}
+                      </TableCell>
+                      <TableCell>{getStatusBadge(t.status || "upcoming")}</TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="w-4 h-4" /></Button></DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => openPointsTable(t)}><ListOrdered className="w-4 h-4 mr-2" /> Points Table</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleGenerateFixtures(t)}><CalendarDays className="w-4 h-4 mr-2" /> Auto-Generate Fixtures</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openEdit(t)}><Pencil className="w-4 h-4 mr-2" /> Edit</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      {/* Create */}
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Create Tournament</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2"><Label>Name</Label><Input placeholder="Tournament Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+            <div className="space-y-2">
+              <Label>Format</Label>
+              <Select value={form.format} onValueChange={(v) => setForm({ ...form, format: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{FORMATS.map((f) => <SelectItem key={f} value={f} className="capitalize">{f.replace('-', ' ')}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>Start Date</Label><Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} /></div>
+              <div className="space-y-2"><Label>End Date</Label><Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} /></div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={submitting} className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit */}
+      <Dialog open={showEdit} onOpenChange={setShowEdit}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Edit Tournament</DialogTitle></DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2"><Label>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+            <div className="space-y-2">
+              <Label>Format</Label>
+              <Select value={form.format} onValueChange={(v) => setForm({ ...form, format: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>{FORMATS.map((f) => <SelectItem key={f} value={f} className="capitalize">{f.replace('-', ' ')}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2"><Label>Start Date</Label><Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} /></div>
+              <div className="space-y-2"><Label>End Date</Label><Input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} /></div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowEdit(false)}>Cancel</Button>
+            <Button onClick={handleEdit} disabled={submitting}>{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Points Table Dialog */}
+      <Dialog open={showPointsTable} onOpenChange={setShowPointsTable}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><ListOrdered className="w-5 h-5 text-amber-500" /> {selected?.name} — Points Table</DialogTitle></DialogHeader>
+          {pointsLoading ? (
+             <div className="space-y-3 py-4">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
+          ) : pointsTable.length === 0 ? (
+             <p className="text-sm text-muted-foreground text-center py-8">No points table data available.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">Pos</TableHead>
+                  <TableHead>Team</TableHead>
+                  <TableHead className="text-center">P</TableHead>
+                  <TableHead className="text-center">W</TableHead>
+                  <TableHead className="text-center">L</TableHead>
+                  <TableHead className="text-center">NR</TableHead>
+                  <TableHead className="text-center">NRR</TableHead>
+                  <TableHead className="text-right">Pts</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pointsTable.map((row, idx) => (
+                  <TableRow key={row.teamId || idx}>
+                    <TableCell className="font-medium">{idx + 1}</TableCell>
+                    <TableCell className="font-medium">{row.teamName || 'Unknown Team'}</TableCell>
+                    <TableCell className="text-center">{row.played || 0}</TableCell>
+                    <TableCell className="text-center text-success">{row.won || 0}</TableCell>
+                    <TableCell className="text-center text-destructive">{row.lost || 0}</TableCell>
+                    <TableCell className="text-center">{row.noResult || 0}</TableCell>
+                    <TableCell className="text-center font-mono text-xs">{row.nrr ? row.nrr.toFixed(3) : "0.000"}</TableCell>
+                    <TableCell className="text-right font-bold text-amber-500">{row.points || 0}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </DialogContent>
+      </Dialog>
+    </motion.div>
+  );
+}

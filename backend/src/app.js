@@ -13,11 +13,11 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: config.socket.corsOrigin,
+    origin: "*",
     credentials: true,
   })
 );
-
+ 
 // ─── Rate Limiting ───
 const limiter = rateLimit({
   windowMs: config.rateLimit.windowMs,

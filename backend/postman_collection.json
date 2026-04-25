@@ -6,7 +6,7 @@
   "variable": [
     {
       "key": "base_url",
-      "value": "http://localhost:5000/api/v1",
+      "value": "http://localhost:5000/api",
       "type": "string"
     },
     {
@@ -28,6 +28,11 @@
       "key": "scorerToken",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -35,29 +40,89 @@
       "name": "1. Authentication",
       "item": [
         {
+          "name": "SuperAdmin Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/superadmin/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "superadmin",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@leagues.com\",\n    \"password\": \"Admin@123\",\n    \"name\": \"Super Admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
           "name": "SuperAdmin Login",
           "request": {
             "method": "POST",
             "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/superadmin/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "superadmin",
+                "login"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n    \"email\": \"admin@leagues.com\",\n    \"password\": \"Admin@123\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": { "raw": "{{base_url}}/auth/superadmin/login", "host": ["{{base_url}}"], "path": ["auth", "superadmin", "login"] }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "ClubManager Register (by SuperAdmin)",
+          "name": "ClubManager Register",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{superAdminToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/club-manager/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "club-manager",
+                "register"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"Club Mgr\",\n    \"email\": \"mgr@club.com\",\n    \"password\": \"Pass@123\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": { "raw": "{{base_url}}/auth/club-manager/register", "host": ["{{base_url}}"], "path": ["auth", "club-manager", "register"] }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
@@ -65,38 +130,90 @@
           "request": {
             "method": "POST",
             "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/club-manager/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "club-manager",
+                "login"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n    \"email\": \"mgr@club.com\",\n    \"password\": \"Pass@123\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": { "raw": "{{base_url}}/auth/club-manager/login", "host": ["{{base_url}}"], "path": ["auth", "club-manager", "login"] }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "ClubManager Reset Password (by SuperAdmin)",
+          "name": "ClubManager Reset Password",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{superAdminToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/club-manager/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "club-manager",
+                "reset-password"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n    \"managerId\": \"...\",\n    \"newPassword\": \"NewPass@123\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": { "raw": "{{base_url}}/auth/club-manager/reset-password", "host": ["{{base_url}}"], "path": ["auth", "club-manager", "reset-password"] }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "MatchManager Create (by ClubManager)",
+          "name": "MatchManager Create",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{clubManagerToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/match-manager/create",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "match-manager",
+                "create"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n    \"name\": \"Match Mgr\",\n    \"phone\": \"9876543210\",\n    \"password\": \"Match@123\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": { "raw": "{{base_url}}/auth/match-manager/create", "host": ["{{base_url}}"], "path": ["auth", "match-manager", "create"] }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
@@ -104,121 +221,859 @@
           "request": {
             "method": "POST",
             "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/match-manager/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "match-manager",
+                "login"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n    \"phone\": \"9876543210\",\n    \"password\": \"Match@123\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "MatchManager Token Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/match-manager/token-login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "match-manager",
+                "token-login"
+              ]
             },
-            "url": { "raw": "{{base_url}}/auth/match-manager/login", "host": ["{{base_url}}"], "path": ["auth", "match-manager", "login"] }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"token\": \"...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "User Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/user/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "user",
+                "register"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"User\",\n    \"email\": \"user@example.com\",\n    \"password\": \"User@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "User Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/user/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "user",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"user@example.com\",\n    \"password\": \"User@123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/refresh-token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh-token"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/change-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "change-password"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"oldPassword\": \"...\",\n    \"newPassword\": \"...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
           "name": "Get Me",
           "request": {
             "method": "GET",
-            "header": [ { "key": "Authorization", "value": "Bearer {{clubManagerToken}}" } ],
-            "url": { "raw": "{{base_url}}/auth/me", "host": ["{{base_url}}"], "path": ["auth", "me"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
           }
         }
       ]
     },
     {
-      "name": "2. League (SuperAdmin)",
+      "name": "2. Admin",
+      "item": [
+        {
+          "name": "Get All Leagues",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/leagues",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "leagues"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create League",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/create-league",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "create-league"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"League Name\",\n    \"description\": \"Desc\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Assign Manager to League",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/league/:id/assign-manager",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "league",
+                ":id",
+                "assign-manager"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"managerId\": \"...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Reset League Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/league/:id/reset-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "league",
+                ":id",
+                "reset-password"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"newPassword\": \"...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Leagues",
       "item": [
         {
           "name": "Create League",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{superAdminToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/leagues",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leagues"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Premier League\",\n    \"description\": \"Main tournament\",\n    \"theme\": {\n        \"primaryColor\": \"#ff0000\"\n    }\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": { "raw": "{{base_url}}/leagues", "host": ["{{base_url}}"], "path": ["leagues"] }
+              "raw": "{\n    \"name\": \"New League\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get All Leagues",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leagues",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leagues"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get League by Slug",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leagues/slug/:slug",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leagues",
+                "slug",
+                ":slug"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get League by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/leagues/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leagues",
+                ":id"
+              ]
+            }
           }
         },
         {
           "name": "Update League",
           "request": {
             "method": "PUT",
-            "header": [ { "key": "Authorization", "value": "Bearer {{superAdminToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/leagues/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leagues",
+                ":id"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"T20 Premier League\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": { "raw": "{{base_url}}/leagues/:id", "host": ["{{base_url}}"], "path": ["leagues", ":id"] }
+              "raw": "{\n    \"name\": \"Updated Name\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
           "name": "Update Theme",
           "request": {
             "method": "PUT",
-            "header": [ { "key": "Authorization", "value": "Bearer {{superAdminToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/leagues/:id/theme",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leagues",
+                ":id",
+                "theme"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"primaryColor\": \"#0000ff\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "raw": "{\n    \"primaryColor\": \"#ff0000\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Settings",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/leagues/:id/settings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leagues",
+                ":id",
+                "settings"
+              ]
             },
-            "url": { "raw": "{{base_url}}/leagues/:id/theme", "host": ["{{base_url}}"], "path": ["leagues", ":id", "theme"] }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"isActive\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Update Logo",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/leagues/:id/logo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leagues",
+                ":id",
+                "logo"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"logoUrl\": \"...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete League",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/leagues/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "leagues",
+                ":id"
+              ]
+            }
           }
         }
       ]
     },
     {
-      "name": "3. Team (ClubManager)",
+      "name": "4. Teams",
       "item": [
         {
           "name": "Create Team",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{clubManagerToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teams",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "teams"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"leagueId\": \"...\",\n    \"name\": \"Super Kings\",\n    \"shortName\": \"CSK\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "raw": "{\n    \"leagueId\": \"...\",\n    \"name\": \"Team Name\",\n    \"shortName\": \"TN\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Teams by League",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teams/league/:leagueId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "teams",
+                "league",
+                ":leagueId"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Team by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/teams/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "teams",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Team",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teams/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "teams",
+                ":id"
+              ]
             },
-            "url": { "raw": "{{base_url}}/teams", "host": ["{{base_url}}"], "path": ["teams"] }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Updated Name\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Team",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teams/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "teams",
+                ":id"
+              ]
+            }
           }
         },
         {
           "name": "Add Player to Team",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{clubManagerToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/teams/:id/add-player",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "teams",
+                ":id",
+                "add-player"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n    \"playerId\": \"...\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": { "raw": "{{base_url}}/teams/:id/add-player", "host": ["{{base_url}}"], "path": ["teams", ":id", "add-player"] }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Get Team Roster",
+          "name": "Get Team Players",
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/teams/:id/players", "host": ["{{base_url}}"], "path": ["teams", ":id", "players"] }
+            "url": {
+              "raw": "{{base_url}}/teams/:id/players",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "teams",
+                ":id",
+                "players"
+              ]
+            }
           }
         }
       ]
     },
     {
-      "name": "4. Player (ClubManager)",
+      "name": "5. Players",
       "item": [
         {
           "name": "Create Player",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{clubManagerToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/players",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "players"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"leagueId\": \"...\",\n    \"teamId\": \"...\",\n    \"name\": \"MS Dhoni\",\n    \"role\": \"Wicketkeeper\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "raw": "{\n    \"leagueId\": \"...\",\n    \"teamId\": \"...\",\n    \"name\": \"Player Name\",\n    \"role\": \"Batter\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Players by League",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/players/league/:leagueId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "players",
+                "league",
+                ":leagueId"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Players by Team",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/players/team/:teamId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "players",
+                "team",
+                ":teamId"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Player by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/players/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "players",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Player",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/players/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "players",
+                ":id"
+              ]
             },
-            "url": { "raw": "{{base_url}}/players", "host": ["{{base_url}}"], "path": ["players"] }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Updated Name\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Player",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/players/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "players",
+                ":id"
+              ]
+            }
           }
         },
         {
@@ -226,103 +1081,823 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/players/:id/stats", "host": ["{{base_url}}"], "path": ["players", ":id", "stats"] }
+            "url": {
+              "raw": "{{base_url}}/players/:id/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "players",
+                ":id",
+                "stats"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Player Recent Matches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/players/:id/recent-matches",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "players",
+                ":id",
+                "recent-matches"
+              ]
+            }
           }
         }
       ]
     },
     {
-      "name": "5. Match (ClubManager)",
+      "name": "6. Tournaments",
+      "item": [
+        {
+          "name": "Create Tournament",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tournaments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tournaments"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"leagueId\": \"...\",\n    \"name\": \"Tournament 2026\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Tournaments by League",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tournaments/league/:leagueId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tournaments",
+                "league",
+                ":leagueId"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Tournament by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tournaments/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tournaments",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Tournament",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tournaments/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tournaments",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Updated Name\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Generate Fixtures",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/tournaments/:id/generate-fixtures",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tournaments",
+                ":id",
+                "generate-fixtures"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"teams\": [\n        \"...\",\n        \"...\"\n    ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Tournament Points Table",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tournaments/:id/points-table",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "tournaments",
+                ":id",
+                "points-table"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Matches",
       "item": [
         {
           "name": "Create Match",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{clubManagerToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/matches",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"leagueId\": \"...\",\n    \"tournamentId\": \"...\",\n    \"teamA\": \"...\",\n    \"teamB\": \"...\",\n    \"venue\": \"Stadium\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "raw": "{\n    \"tournamentId\": \"...\",\n    \"teamA\": \"...\",\n    \"teamB\": \"...\",\n    \"date\": \"...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get All Matches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/matches",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Live Matches by League",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/matches/live/:leagueId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches",
+                "live",
+                ":leagueId"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Matches by Tournament",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/matches/tournament/:tournamentId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches",
+                "tournament",
+                ":tournamentId"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Match by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/matches/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Match",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/matches/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches",
+                ":id"
+              ]
             },
-            "url": { "raw": "{{base_url}}/matches", "host": ["{{base_url}}"], "path": ["matches"] }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"venue\": \"New Venue\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete Match",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/matches/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Schedule Match",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/matches/:id/schedule",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches",
+                ":id",
+                "schedule"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"date\": \"...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Assign Match Manager",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/matches/:id/assign-manager",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches",
+                ":id",
+                "assign-manager"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"managerId\": \"...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
           "name": "Generate Scorer Token",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{clubManagerToken}}" } ],
-            "url": { "raw": "{{base_url}}/matches/:id/generate-token", "host": ["{{base_url}}"], "path": ["matches", ":id", "generate-token"] }
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/matches/:id/generate-token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches",
+                ":id",
+                "generate-token"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Scorer Link",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/matches/:id/scorer-link",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches",
+                ":id",
+                "scorer-link"
+              ]
+            }
           }
         },
         {
           "name": "Update Stream URL",
           "request": {
             "method": "PUT",
-            "header": [ { "key": "Authorization", "value": "Bearer {{clubManagerToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{clubManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/matches/:id/stream-url",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches",
+                ":id",
+                "stream-url"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"youtubeStreamUrl\": \"https://youtube.com/watch?v=xxxxx\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": { "raw": "{{base_url}}/matches/:id/stream-url", "host": ["{{base_url}}"], "path": ["matches", ":id", "stream-url"] }
+              "raw": "{\n    \"streamUrl\": \"...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Stream URL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/matches/:id/stream-url",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "matches",
+                ":id",
+                "stream-url"
+              ]
+            }
           }
         }
       ]
     },
     {
-      "name": "6. Live Scoring (MatchManager / ScorerToken)",
+      "name": "8. Scoring",
       "item": [
         {
           "name": "Start Match",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{scorerToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{matchManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/start",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "start"
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n    \"tossWonBy\": \"...\",\n    \"electedTo\": \"bat\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": { "raw": "{{base_url}}/scoring/:id/start", "host": ["{{base_url}}"], "path": ["scoring", ":id", "start"] }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Set Active Players",
+          "name": "Resume Match",
           "request": {
-            "method": "PUT",
-            "header": [ { "key": "Authorization", "value": "Bearer {{scorerToken}}" } ],
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{matchManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/resume",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "resume"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"strikerId\": \"...\",\n    \"nonStrikerId\": \"...\",\n    \"bowlerId\": \"...\"\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": { "raw": "{{base_url}}/scoring/:id/set-players", "host": ["{{base_url}}"], "path": ["scoring", ":id", "set-players"] }
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
           "name": "Add Score",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{scorerToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{matchManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/score",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "score"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"runs\": 4\n}",
-              "options": { "raw": { "language": "json" } }
-            },
-            "url": { "raw": "{{base_url}}/scoring/:id/score", "host": ["{{base_url}}"], "path": ["scoring", ":id", "score"] }
+              "raw": "{\n    \"runs\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
           "name": "Add Wicket",
           "request": {
             "method": "POST",
-            "header": [ { "key": "Authorization", "value": "Bearer {{scorerToken}}" } ],
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{matchManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/wicket",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "wicket"
+              ]
+            },
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"wicketType\": \"bowled\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "raw": "{\n    \"type\": \"bowled\",\n    \"outPlayerId\": \"...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Add Extra",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{matchManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/extra",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "extra"
+              ]
             },
-            "url": { "raw": "{{base_url}}/scoring/:id/wicket", "host": ["{{base_url}}"], "path": ["scoring", ":id", "wicket"] }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"wide\",\n    \"runs\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "End Match",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{matchManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/end",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "end"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Undo Last Event",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{matchManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/undo",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "undo"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Switch Innings",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{matchManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/switch-innings",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "switch-innings"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Set Active Players",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{matchManagerToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/set-players",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "set-players"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"strikerId\": \"...\",\n    \"nonStrikerId\": \"...\",\n    \"bowlerId\": \"...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Get Match Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/summary",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "summary"
+              ]
+            }
           }
         },
         {
@@ -330,28 +1905,303 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/scoring/:id/scorecard", "host": ["{{base_url}}"], "path": ["scoring", ":id", "scorecard"] }
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/scorecard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "scorecard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Match Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "events"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Audit Logs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/scoring/:id/audit-logs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "scoring",
+                ":id",
+                "audit-logs"
+              ]
+            }
           }
         }
       ]
     },
     {
-      "name": "7. Public Endpoints (No Auth)",
+      "name": "9. Analytics",
+      "item": [
+        {
+          "name": "Get Player Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/player/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "player",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Player Form",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/player/:id/form",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "player",
+                ":id",
+                "form"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Match Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/match/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "match",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Match Graph",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/match/:id/graph",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "match",
+                ":id",
+                "graph"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Team Analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/team/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "team",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Team Head to Head",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/team/:id/head-to-head/:opponentId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "team",
+                ":id",
+                "head-to-head",
+                ":opponentId"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Leaderboard by League",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/analytics/leaderboard/:leagueId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "analytics",
+                "leaderboard",
+                ":leagueId"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Public Endpoints",
       "item": [
         {
           "name": "Get All Leagues",
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/public/leagues", "host": ["{{base_url}}"], "path": ["public", "leagues"] }
+            "url": {
+              "raw": "{{base_url}}/public/leagues",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "leagues"
+              ]
+            }
           }
         },
         {
-          "name": "Get Live Matches",
+          "name": "Get League by Slug",
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/public/live-matches/:leagueId", "host": ["{{base_url}}"], "path": ["public", "live-matches", ":leagueId"] }
+            "url": {
+              "raw": "{{base_url}}/public/league/slug/:slug",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "league",
+                "slug",
+                ":slug"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Live Matches by League",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/live-matches/:leagueId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "live-matches",
+                ":leagueId"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Match Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/match/:matchId/summary",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "match",
+                ":matchId",
+                "summary"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Match Scorecard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/match/:matchId/scorecard",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "match",
+                ":matchId",
+                "scorecard"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get League Leaderboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/public/leaderboard/:leagueId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "leaderboard",
+                ":leagueId"
+              ]
+            }
           }
         },
         {
@@ -359,44 +2209,94 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/public/points-table/:tournamentId", "host": ["{{base_url}}"], "path": ["public", "points-table", ":tournamentId"] }
-          }
-        },
-        {
-          "name": "Get System Health",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] }
+            "url": {
+              "raw": "{{base_url}}/public/points-table/:tournamentId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "public",
+                "points-table",
+                ":tournamentId"
+              ]
+            }
           }
         }
       ]
     },
     {
-      "name": "8. Analytics",
+      "name": "11. Settings",
       "item": [
         {
-          "name": "League Leaderboard",
+          "name": "Update League Settings",
           "request": {
-            "method": "GET",
-            "header": [],
-            "url": { "raw": "{{base_url}}/analytics/leaderboard/:leagueId", "host": ["{{base_url}}"], "path": ["analytics", "leaderboard", ":leagueId"] }
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{superAdminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/settings/league/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "settings",
+                "league",
+                ":id"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"settingKey\": \"value\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           }
         },
         {
-          "name": "Match Graph (Worm & Manhattan)",
+          "name": "Get League Settings",
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/analytics/match/:id/graph", "host": ["{{base_url}}"], "path": ["analytics", "match", ":id", "graph"] }
+            "url": {
+              "raw": "{{base_url}}/settings/league/:id",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "settings",
+                "league",
+                ":id"
+              ]
+            }
           }
-        },
+        }
+      ]
+    },
+    {
+      "name": "12. Points Table",
+      "item": [
         {
-          "name": "Team Head to Head",
+          "name": "Get Points Table by Tournament",
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{base_url}}/analytics/team/:id/head-to-head/:opponentId", "host": ["{{base_url}}"], "path": ["analytics", "team", ":id", "head-to-head", ":opponentId"] }
+            "url": {
+              "raw": "{{base_url}}/points-table/:tournamentId",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "points-table",
+                ":tournamentId"
+              ]
+            }
           }
         }
       ]
