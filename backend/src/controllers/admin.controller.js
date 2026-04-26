@@ -35,11 +35,19 @@ const resetLeaguePassword = async (req, res, next) => {
   }
 };
 
-const assignManager = async (req, res, next) => {
+const createLeagueManager = async (req, res, next) => {
   try {
-    const { managerId } = req.body;
-    const result = await adminService.assignManagerToLeague(req.params.id, managerId);
-    res.json(ApiResponse.ok(result, 'Manager assigned to league'));
+    const result = await adminService.createLeagueManager(req.params.id, req.body);
+    res.json(ApiResponse.ok(result, 'Manager created and assigned to league successfully'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateLeagueManager = async (req, res, next) => {
+  try {
+    const result = await adminService.updateLeagueManager(req.params.managerId, req.body);
+    res.json(ApiResponse.ok(result, 'Manager details updated successfully'));
   } catch (error) {
     next(error);
   }
@@ -49,5 +57,6 @@ module.exports = {
   getAllLeagues,
   createLeague,
   resetLeaguePassword,
-  assignManager,
+  createLeagueManager,
+  updateLeagueManager,
 };

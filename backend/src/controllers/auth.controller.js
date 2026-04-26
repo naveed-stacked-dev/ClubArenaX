@@ -133,8 +133,10 @@ const refreshToken = async (req, res, next) => {
  */
 const getMe = async (req, res, next) => {
   try {
+    const userObj = req.user.toObject();
+    userObj.role = req.userRole;
     res.json(
-      ApiResponse.ok({ user: req.user, role: req.userRole }, 'Profile fetched')
+      ApiResponse.ok({ user: userObj }, 'Profile fetched')
     );
   } catch (error) {
     next(error);

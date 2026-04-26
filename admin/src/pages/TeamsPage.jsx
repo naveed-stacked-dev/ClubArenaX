@@ -4,6 +4,7 @@ import { useAppContext } from "@/hooks/useAppContext";
 import leagueService from "@/services/leagueService";
 import teamService from "@/services/teamService";
 import { toast } from "sonner";
+import ImageUpload from "@/components/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,12 +45,14 @@ export default function TeamsPage() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = user?.role === "superadmin"
-          ? await leagueService.adminGetAll()
-          : await leagueService.getAll();
-        const data = res.data?.data || res.data?.leagues || res.data || [];
-        setLeagues(Array.isArray(data) ? data : []);
-        if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+        if (user?.role === "superAdmin") {
+          const res = await leagueService.adminGetAll();
+          const data = res.data?.data || res.data?.leagues || res.data || [];
+          setLeagues(Array.isArray(data) ? data : []);
+          if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+        } else {
+          if (user?.leagueId) setSelectedLeague(user.leagueId);
+        }
       } catch { /* interceptor */ }
       finally { setLeagueLoading(false); }
     };
@@ -85,7 +88,16 @@ export default function TeamsPage() {
     if (!form.name.trim()) return toast.error("Team name is required");
     setSubmitting(true);
     try {
-      await teamService.create({ ...form, league: selectedLeague });
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("leagueId", selectedLeague);
+      if (form.logoUrl instanceof File) {
+        formData.append("logo", form.logoUrl);
+      } else if (form.logoUrl) {
+        formData.append("logo", form.logoUrl);
+      }
+
+      await teamService.create(formData);
       toast.success("Team created");
       setShowCreate(false);
       setForm({ name: "", logoUrl: "" });
@@ -93,10 +105,20 @@ export default function TeamsPage() {
     } catch { /* interceptor */ } finally { setSubmitting(false); }
   };
 
+
+
   const handleEdit = async () => {
     setSubmitting(true);
     try {
-      await teamService.update(selected._id || selected.id, form);
+      const formData = new FormData();
+      formData.append("name", form.name);
+      if (form.logoUrl instanceof File) {
+        formData.append("logo", form.logoUrl);
+      } else if (form.logoUrl) {
+        formData.append("logo", form.logoUrl);
+      }
+
+      await teamService.update(selected._id || selected.id, formData);
       toast.success("Team updated");
       setShowEdit(false);
       fetchTeams();
@@ -148,16 +170,18 @@ export default function TeamsPage() {
 
       {/* League Selector + Search */}
       <motion.div variants={item} className="flex flex-col sm:flex-row gap-3">
-        <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
-          <SelectTrigger className="w-full sm:w-[260px]">
-            <SelectValue placeholder="Select a league" />
-          </SelectTrigger>
-          <SelectContent>
-            {leagues.map((l) => (
-              <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {user?.role === "superadmin" && (
+          <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
+            <SelectTrigger className="w-full sm:w-[260px]">
+              <SelectValue placeholder="Select a league" />
+            </SelectTrigger>
+            <SelectContent>
+              {leagues.map((l) => (
+                <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Search teams..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
@@ -242,7 +266,15 @@ export default function TeamsPage() {
           <DialogHeader><DialogTitle>Create Team</DialogTitle><DialogDescription>Add a new team to {currentLeagueName}</DialogDescription></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2"><Label>Team Name</Label><Input placeholder="e.g. Thunder Kings" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Logo URL (optional)</Label><Input placeholder="https://..." value={form.logoUrl} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} /></div>
+            <div className="space-y-2">
+              <Label>Team Logo</Label>
+              <ImageUpload
+                value={form.logoUrl}
+                onChange={(fileOrUrl) => setForm({ ...form, logoUrl: fileOrUrl })}
+                label={null}
+                aspectHint="1:1"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
@@ -257,7 +289,15 @@ export default function TeamsPage() {
           <DialogHeader><DialogTitle>Edit Team</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2"><Label>Team Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Logo URL</Label><Input value={form.logoUrl} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} /></div>
+            <div className="space-y-2">
+              <Label>Team Logo</Label>
+              <ImageUpload
+                value={form.logoUrl}
+                onChange={(fileOrUrl) => setForm({ ...form, logoUrl: fileOrUrl })}
+                label={null}
+                aspectHint="1:1"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEdit(false)}>Cancel</Button>

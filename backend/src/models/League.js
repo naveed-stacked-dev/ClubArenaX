@@ -24,10 +24,17 @@ const leagueSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    bannerUrl: {
+      type: String,
+      default: null,
+    },
+    themeColor: {
+      type: String,
+      default: '#7c3aed',
+    },
     theme: {
       primaryColor: { type: String, default: '#1a73e8' },
       secondaryColor: { type: String, default: '#ffffff' },
-      bannerUrl: { type: String, default: null },
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

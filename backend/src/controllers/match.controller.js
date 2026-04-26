@@ -5,7 +5,12 @@ const { buildPaginationResponse } = require('../middlewares/pagination.middlewar
 const getAll = async (req, res, next) => {
   try {
     const filter = {};
-    if (req.query.leagueId) filter.leagueId = req.query.leagueId;
+    // Tenant-scoped: ClubManagers auto-filter by their leagueId
+    if (req.leagueId) {
+      filter.leagueId = req.leagueId;
+    } else if (req.query.leagueId) {
+      filter.leagueId = req.query.leagueId;
+    }
     if (req.query.status) filter.status = req.query.status;
     if (req.query.tournamentId) filter.tournamentId = req.query.tournamentId;
 

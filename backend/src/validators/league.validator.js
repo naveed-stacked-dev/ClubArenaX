@@ -8,6 +8,8 @@ const createLeagueSchema = Joi.object({
   slug: Joi.string().trim().lowercase().pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional()
     .messages({ 'string.pattern.base': 'Slug must only contain lowercase letters, numbers, and hyphens' }),
   logo: Joi.string().uri().allow(null, '').optional(),
+  bannerUrl: Joi.string().uri().allow(null, '').optional(),
+  themeColor: Joi.string().pattern(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
   description: Joi.string().trim().max(500).allow('').optional(),
   settings: Joi.object({
     oversPerInning: Joi.number().integer().min(1).max(50).default(20),
@@ -23,6 +25,8 @@ const updateLeagueSchema = Joi.object({
   slug: Joi.string().trim().lowercase().pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional()
     .messages({ 'string.pattern.base': 'Slug must only contain lowercase letters, numbers, and hyphens' }),
   logo: Joi.string().uri().allow(null, '').optional(),
+  bannerUrl: Joi.string().uri().allow(null, '').optional(),
+  themeColor: Joi.string().pattern(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional(),
   description: Joi.string().trim().max(500).allow('').optional(),
   isActive: Joi.boolean().optional(),
   settings: Joi.object({

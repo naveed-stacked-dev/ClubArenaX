@@ -8,29 +8,72 @@ const getAllLeaguesAdmin = async ({ skip, limit }) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('createdBy', 'name email'),
+      .populate('createdBy', 'name email')
+      .lean(),
     League.countDocuments(),
   ]);
 
-  return { leagues, total };
+  const leagueIds = leagues.map((l) => l._id);
+  const managers = await ClubManager.find({ leagueId: { $in: leagueIds } }).lean();
+
+  const leaguesWithManagers = leagues.map((league) => {
+    const manager = managers.find(
+      (m) => m.leagueId.toString() === league._id.toString()
+    );
+    return {
+      ...league,
+      manager: manager
+        ? { _id: manager._id, name: manager.name, email: manager.email }
+        : null,
+    };
+  });
+
+  return { leagues: leaguesWithManagers, total };
 };
 
-// Reset password for club manager is already in auth.service, but can be managed by super admin
-// Let's bring it all together for admin actions
-const assignManagerToLeague = async (leagueId, managerId) => {
+const createLeagueManager = async (leagueId, managerData) => {
   const league = await League.findById(leagueId);
   if (!league) throw ApiError.notFound('League not found');
 
-  const manager = await ClubManager.findById(managerId);
-  if (!manager) throw ApiError.notFound('Club Manager not found');
+  const existingManager = await ClubManager.findOne({ leagueId });
+  if (existingManager) throw ApiError.conflict('League already has a manager');
 
-  manager.leagueId = leagueId;
-  await manager.save();
+  const emailExists = await ClubManager.findOne({ email: managerData.email });
+  if (emailExists) throw ApiError.conflict('Email already in use by another manager');
+
+  const manager = await ClubManager.create({
+    ...managerData,
+    leagueId,
+  });
 
   return manager;
 };
 
+const updateLeagueManager = async (managerId, managerData) => {
+  const manager = await ClubManager.findById(managerId);
+  if (!manager) throw ApiError.notFound('Club Manager not found');
+
+  if (managerData.email && managerData.email !== manager.email) {
+    const emailExists = await ClubManager.findOne({ email: managerData.email });
+    if (emailExists) throw ApiError.conflict('Email already in use by another manager');
+  }
+
+  if (managerData.name) manager.name = managerData.name;
+  if (managerData.email) manager.email = managerData.email;
+  if (managerData.password) manager.password = managerData.password; // pre-save hook will hash it
+
+  await manager.save();
+
+  return {
+    _id: manager._id,
+    name: manager.name,
+    email: manager.email,
+    leagueId: manager.leagueId,
+  };
+};
+
 module.exports = {
   getAllLeaguesAdmin,
-  assignManagerToLeague,
+  createLeagueManager,
+  updateLeagueManager,
 };

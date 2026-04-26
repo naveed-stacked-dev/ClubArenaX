@@ -51,10 +51,14 @@ export default function MatchesPage() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = user?.role === "superadmin" ? await leagueService.adminGetAll() : await leagueService.getAll();
-        const data = res.data?.data || res.data?.leagues || res.data || [];
-        setLeagues(Array.isArray(data) ? data : []);
-        if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+        if (user?.role === "superAdmin") {
+          const res = await leagueService.adminGetAll();
+          const data = res.data?.data || res.data?.leagues || res.data || [];
+          setLeagues(Array.isArray(data) ? data : []);
+          if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+        } else {
+          if (user?.leagueId) setSelectedLeague(user.leagueId);
+        }
       } catch { /* interceptor */ }
       finally { setLeagueLoading(false); }
     };
@@ -162,10 +166,12 @@ export default function MatchesPage() {
       </motion.div>
 
       <motion.div variants={item} className="flex flex-col sm:flex-row gap-3">
-        <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
-          <SelectTrigger className="w-full sm:w-[220px]"><SelectValue placeholder="League" /></SelectTrigger>
-          <SelectContent>{leagues.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}</SelectContent>
-        </Select>
+        {user?.role === "superAdmin" && (
+          <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
+            <SelectTrigger className="w-full sm:w-[220px]"><SelectValue placeholder="League" /></SelectTrigger>
+            <SelectContent>{leagues.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}</SelectContent>
+          </Select>
+        )}
         <Select value={selectedTournament} onValueChange={setSelectedTournament}>
           <SelectTrigger className="w-full sm:w-[220px]"><SelectValue placeholder="Tournament" /></SelectTrigger>
           <SelectContent>

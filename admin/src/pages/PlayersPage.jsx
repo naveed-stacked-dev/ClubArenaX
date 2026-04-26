@@ -5,6 +5,7 @@ import leagueService from "@/services/leagueService";
 import teamService from "@/services/teamService";
 import playerService from "@/services/playerService";
 import { toast } from "sonner";
+import ImageUpload from "@/components/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,10 +47,14 @@ export default function PlayersPage() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = user?.role === "superadmin" ? await leagueService.adminGetAll() : await leagueService.getAll();
-        const data = res.data?.data || res.data?.leagues || res.data || [];
-        setLeagues(Array.isArray(data) ? data : []);
-        if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+        if (user?.role === "superAdmin") {
+          const res = await leagueService.adminGetAll();
+          const data = res.data?.data || res.data?.leagues || res.data || [];
+          setLeagues(Array.isArray(data) ? data : []);
+          if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+        } else {
+          if (user?.leagueId) setSelectedLeague(user.leagueId);
+        }
       } catch { /* interceptor */ }
       finally { setLeagueLoading(false); }
     };
@@ -78,7 +83,18 @@ export default function PlayersPage() {
     if (!form.name.trim()) return toast.error("Player name required");
     setSubmitting(true);
     try {
-      await playerService.create({ ...form, league: selectedLeague });
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("role", form.role);
+      formData.append("leagueId", selectedLeague);
+      if (form.team) formData.append("teamId", form.team);
+      if (form.photoUrl instanceof File) {
+        formData.append("avatar", form.photoUrl);
+      } else if (form.photoUrl) {
+        formData.append("avatar", form.photoUrl);
+      }
+
+      await playerService.create(formData);
       toast.success("Player created");
       setShowCreate(false);
       setForm({ name: "", role: "batsman", jerseyNumber: "", phone: "", photoUrl: "", team: "" });
@@ -86,10 +102,22 @@ export default function PlayersPage() {
     } catch { /* interceptor */ } finally { setSubmitting(false); }
   };
 
+
+
   const handleEdit = async () => {
     setSubmitting(true);
     try {
-      await playerService.update(selected._id || selected.id, form);
+      const formData = new FormData();
+      formData.append("name", form.name);
+      formData.append("role", form.role);
+      if (form.team) formData.append("teamId", form.team);
+      if (form.photoUrl instanceof File) {
+        formData.append("avatar", form.photoUrl);
+      } else if (form.photoUrl) {
+        formData.append("avatar", form.photoUrl);
+      }
+
+      await playerService.update(selected._id || selected.id, formData);
       toast.success("Player updated");
       setShowEdit(false);
       fetchPlayers();
@@ -146,10 +174,12 @@ export default function PlayersPage() {
       </motion.div>
 
       <motion.div variants={item} className="flex flex-col sm:flex-row gap-3">
-        <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
-          <SelectTrigger className="w-full sm:w-[260px]"><SelectValue placeholder="Select a league" /></SelectTrigger>
-          <SelectContent>{leagues.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}</SelectContent>
-        </Select>
+        {user?.role === "superAdmin" && (
+          <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
+            <SelectTrigger className="w-full sm:w-[260px]"><SelectValue placeholder="Select a league" /></SelectTrigger>
+            <SelectContent>{leagues.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}</SelectContent>
+          </Select>
+        )}
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Search players..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
@@ -240,7 +270,15 @@ export default function PlayersPage() {
                 <SelectContent>{teams.map((t) => <SelectItem key={t._id || t.id} value={t._id || t.id}>{t.name}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div className="space-y-2"><Label>Photo URL (optional)</Label><Input placeholder="https://..." value={form.photoUrl} onChange={(e) => setForm({ ...form, photoUrl: e.target.value })} /></div>
+            <div className="space-y-2">
+              <Label>Player Photo</Label>
+              <ImageUpload
+                value={form.photoUrl}
+                onChange={(fileOrUrl) => setForm({ ...form, photoUrl: fileOrUrl })}
+                label={null}
+                aspectHint="1:1"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
@@ -261,6 +299,15 @@ export default function PlayersPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2"><Label>Jersey #</Label><Input value={form.jerseyNumber} onChange={(e) => setForm({ ...form, jerseyNumber: e.target.value })} /></div>
               <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+            </div>
+            <div className="space-y-2">
+              <Label>Player Photo</Label>
+              <ImageUpload
+                value={form.photoUrl}
+                onChange={(fileOrUrl) => setForm({ ...form, photoUrl: fileOrUrl })}
+                label={null}
+                aspectHint="1:1"
+              />
             </div>
           </div>
           <DialogFooter>

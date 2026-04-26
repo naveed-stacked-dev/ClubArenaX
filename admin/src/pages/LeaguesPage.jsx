@@ -4,6 +4,7 @@ import { useAppContext } from "@/hooks/useAppContext";
 import leagueService from "@/services/leagueService";
 import authService from "@/services/authService";
 import { toast } from "sonner";
+import ImageUpload from "@/components/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -59,7 +60,7 @@ export default function LeaguesPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
-  const [showAssign, setShowAssign] = useState(false);
+  const [showManager, setShowManager] = useState(false);
   const [selected, setSelected] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -87,7 +88,17 @@ export default function LeaguesPage() {
     if (!form.name.trim()) return toast.error("League name is required");
     setSubmitting(true);
     try {
-      await leagueService.adminCreate(form);
+      const formData = new FormData();
+      formData.append("name", form.name);
+      if (form.slug) formData.append("slug", form.slug);
+      formData.append("sportType", form.sportType);
+      if (form.logoUrl instanceof File) {
+        formData.append("logo", form.logoUrl);
+      } else if (form.logoUrl) {
+        formData.append("logo", form.logoUrl);
+      }
+
+      await leagueService.adminCreate(formData);
       toast.success("League created successfully");
       setShowCreate(false);
       resetForm();
@@ -95,10 +106,22 @@ export default function LeaguesPage() {
     } catch { /* interceptor */ } finally { setSubmitting(false); }
   };
 
+
+
   const handleEdit = async () => {
     setSubmitting(true);
     try {
-      await leagueService.update(selected._id || selected.id, form);
+      const formData = new FormData();
+      formData.append("name", form.name);
+      if (form.slug) formData.append("slug", form.slug);
+      formData.append("sportType", form.sportType);
+      if (form.logoUrl instanceof File) {
+        formData.append("logo", form.logoUrl);
+      } else if (form.logoUrl) {
+        formData.append("logo", form.logoUrl);
+      }
+
+      await leagueService.update(selected._id || selected.id, formData);
       toast.success("League updated");
       setShowEdit(false);
       fetchLeagues();
@@ -115,13 +138,20 @@ export default function LeaguesPage() {
     } catch { /* interceptor */ } finally { setSubmitting(false); }
   };
 
-  const handleAssignManager = async () => {
+  const handleManagerSubmit = async () => {
     if (!assignForm.email.trim()) return toast.error("Manager email is required");
+    if (!selected?.manager && !assignForm.password.trim()) return toast.error("Password is required for new manager");
+    
     setSubmitting(true);
     try {
-      await leagueService.assignManager(selected._id || selected.id, assignForm);
-      toast.success("Manager assigned successfully");
-      setShowAssign(false);
+      if (selected.manager) {
+        await leagueService.updateManager(selected._id || selected.id, selected.manager._id, assignForm);
+        toast.success("Manager updated successfully");
+      } else {
+        await leagueService.createManager(selected._id || selected.id, assignForm);
+        toast.success("Manager created successfully");
+      }
+      setShowManager(false);
       setAssignForm({ email: "", password: "", name: "" });
       fetchLeagues();
     } catch { /* interceptor */ } finally { setSubmitting(false); }
@@ -134,7 +164,15 @@ export default function LeaguesPage() {
   };
 
   const openDelete = (league) => { setSelected(league); setShowDelete(true); };
-  const openAssign = (league) => { setSelected(league); setAssignForm({ email: "", password: "", name: "" }); setShowAssign(true); };
+  const openManager = (league) => { 
+    setSelected(league); 
+    if (league.manager) {
+      setAssignForm({ email: league.manager.email || "", password: "", name: league.manager.name || "" });
+    } else {
+      setAssignForm({ email: "", password: "", name: "" }); 
+    }
+    setShowManager(true); 
+  };
 
   const filtered = leagues.filter((l) =>
     (l.name || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -239,8 +277,8 @@ export default function LeaguesPage() {
                               <DropdownMenuItem onClick={() => openEdit(league)}>
                                 <Pencil className="w-4 h-4 mr-2" /> Edit
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openAssign(league)}>
-                                <UserPlus className="w-4 h-4 mr-2" /> Assign Manager
+                              <DropdownMenuItem onClick={() => openManager(league)}>
+                                <UserPlus className="w-4 h-4 mr-2" /> {league.manager ? "Edit Manager" : "Create Manager"}
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={() => openDelete(league)} className="text-destructive focus:text-destructive">
                                 <Trash2 className="w-4 h-4 mr-2" /> Delete
@@ -275,8 +313,13 @@ export default function LeaguesPage() {
               <Input placeholder="e.g. premier-cricket-league" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label>Logo URL (optional)</Label>
-              <Input placeholder="https://..." value={form.logoUrl} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} />
+              <Label>League Logo</Label>
+              <ImageUpload
+                value={form.logoUrl}
+                onChange={(fileOrUrl) => setForm({ ...form, logoUrl: fileOrUrl })}
+                label={null}
+                aspectHint="1:1"
+              />
             </div>
           </div>
           <DialogFooter>
@@ -305,8 +348,13 @@ export default function LeaguesPage() {
               <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label>Logo URL</Label>
-              <Input value={form.logoUrl} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} />
+              <Label>League Logo</Label>
+              <ImageUpload
+                value={form.logoUrl}
+                onChange={(fileOrUrl) => setForm({ ...form, logoUrl: fileOrUrl })}
+                label={null}
+                aspectHint="1:1"
+              />
             </div>
           </div>
           <DialogFooter>
@@ -334,14 +382,17 @@ export default function LeaguesPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Assign Manager Dialog */}
-      <Dialog open={showAssign} onOpenChange={setShowAssign}>
+      {/* Create/Edit Manager Dialog */}
+      <Dialog open={showManager} onOpenChange={setShowManager}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-violet-500" /> Assign Manager
+              <UserPlus className="w-5 h-5 text-violet-500" /> {selected?.manager ? "Edit Manager" : "Create Manager"}
             </DialogTitle>
-            <DialogDescription>Assign a Club Manager to <strong>{selected?.name}</strong></DialogDescription>
+            <DialogDescription>
+              {selected?.manager ? `Update manager details for ` : `Create a new manager for `}
+              <strong>{selected?.name}</strong>
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
@@ -354,13 +405,13 @@ export default function LeaguesPage() {
             </div>
             <div className="space-y-2">
               <Label className="flex items-center gap-1"><KeyRound className="w-3 h-3" /> Password</Label>
-              <PasswordInput placeholder="Set initial password" value={assignForm.password} onChange={(e) => setAssignForm({ ...assignForm, password: e.target.value })} />
+              <PasswordInput placeholder={selected?.manager ? "Leave blank to keep current password" : "Set initial password"} value={assignForm.password} onChange={(e) => setAssignForm({ ...assignForm, password: e.target.value })} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAssign(false)}>Cancel</Button>
-            <Button onClick={handleAssignManager} disabled={submitting} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
-              {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Assign
+            <Button variant="outline" onClick={() => setShowManager(false)}>Cancel</Button>
+            <Button onClick={handleManagerSubmit} disabled={submitting} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+              {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} {selected?.manager ? "Update" : "Create"}
             </Button>
           </DialogFooter>
         </DialogContent>

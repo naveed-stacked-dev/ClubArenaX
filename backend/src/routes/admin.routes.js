@@ -13,7 +13,8 @@ router.get('/leagues', paginate, adminController.getAllLeagues);
 router.post('/create-league', validate(leagueValidators.createLeagueSchema), adminController.createLeague);
 
 // Specific admin assignments and resets
-router.put('/league/:id/assign-manager', adminController.assignManager);
+router.post('/league/:id/manager', adminController.createLeagueManager);
+router.put('/league/:id/manager/:managerId', adminController.updateLeagueManager);
 router.put('/league/:id/reset-password', adminController.resetLeaguePassword);
 
 module.exports = router;

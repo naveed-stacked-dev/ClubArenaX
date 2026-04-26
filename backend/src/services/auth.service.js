@@ -50,6 +50,7 @@ const register = async (role, data) => {
   const userObj = user.toObject();
   delete userObj.password;
   delete userObj.refreshToken;
+  userObj.role = role;
 
   return { user: userObj, ...tokens };
 };
@@ -79,6 +80,7 @@ const login = async (role, email, password) => {
   const userObj = user.toObject();
   delete userObj.password;
   delete userObj.refreshToken;
+  userObj.role = role;
 
   return { user: userObj, ...tokens };
 };
@@ -121,7 +123,9 @@ const loginMatchManagerByToken = async (token) => {
   }
 
   const tokens = generateTokens(manager._id, ROLES.MATCH_MANAGER);
-  return { user: manager.toObject(), ...tokens };
+  const userObj = manager.toObject();
+  userObj.role = ROLES.MATCH_MANAGER;
+  return { user: userObj, ...tokens };
 };
 
 /**
@@ -157,6 +161,7 @@ const loginMatchManager = async (email, password) => {
 
   const managerObj = manager.toObject();
   delete managerObj.password;
+  managerObj.role = ROLES.MATCH_MANAGER;
 
   return { user: managerObj, ...tokens };
 };

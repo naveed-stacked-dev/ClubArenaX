@@ -1,10 +1,20 @@
 const teamService = require('../services/team.service');
 const playerService = require('../services/player.service');
+const s3Service = require('../services/s3Service');
 const ApiResponse = require('../utils/ApiResponse');
 const { buildPaginationResponse } = require('../middlewares/pagination.middleware');
 
 const create = async (req, res, next) => {
   try {
+    if (req.files && Array.isArray(req.files)) {
+      for (const file of req.files) {
+        if (file.fieldname === 'logo') {
+          const key = s3Service.generateKey('teams', file.originalname);
+          req.body.logoUrl = await s3Service.uploadToS3(file.buffer, key, file.mimetype);
+        }
+      }
+    }
+
     const team = await teamService.createTeam(req.body);
     res.status(201).json(ApiResponse.created(team));
   } catch (error) {
@@ -36,6 +46,15 @@ const getById = async (req, res, next) => {
 
 const update = async (req, res, next) => {
   try {
+    if (req.files && Array.isArray(req.files)) {
+      for (const file of req.files) {
+        if (file.fieldname === 'logo') {
+          const key = s3Service.generateKey(`teams/${req.params.id}`, file.originalname);
+          req.body.logoUrl = await s3Service.uploadToS3(file.buffer, key, file.mimetype);
+        }
+      }
+    }
+
     const team = await teamService.updateTeam(req.params.id, req.body);
     res.json(ApiResponse.ok(team, 'Team updated'));
   } catch (error) {

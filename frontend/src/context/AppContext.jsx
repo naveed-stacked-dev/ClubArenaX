@@ -10,7 +10,9 @@ export function AppProvider({ children }) {
 
   const login = useCallback(async (credentials) => {
     const res = await authService.login(credentials);
-    const { token: newToken, user: userData } = res.data.data || res.data;
+    const dataObj = res.data.data || res.data;
+    const newToken = dataObj.accessToken || dataObj.token;
+    const userData = dataObj.user;
     localStorage.setItem("user_token", newToken);
     localStorage.setItem("user_data", JSON.stringify(userData));
     setToken(newToken);
@@ -20,7 +22,9 @@ export function AppProvider({ children }) {
 
   const register = useCallback(async (data) => {
     const res = await authService.register(data);
-    const { token: newToken, user: userData } = res.data.data || res.data;
+    const dataObj = res.data.data || res.data;
+    const newToken = dataObj.accessToken || dataObj.token;
+    const userData = dataObj.user;
     localStorage.setItem("user_token", newToken);
     localStorage.setItem("user_data", JSON.stringify(userData));
     setToken(newToken);
@@ -43,7 +47,8 @@ export function AppProvider({ children }) {
       }
       try {
         const res = await authService.getMe();
-        setUser(res.data.data || res.data.user || res.data);
+        const dataObj = res.data.data || res.data;
+        setUser(dataObj.user || dataObj);
       } catch {
         logout();
       } finally {

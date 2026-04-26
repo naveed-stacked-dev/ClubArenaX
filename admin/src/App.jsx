@@ -5,7 +5,8 @@ import AdminLayout from "@/components/AdminLayout";
 
 // Pages
 import LoginPage from "@/pages/LoginPage";
-import DashboardPage from "@/pages/DashboardPage";
+import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
+import ClubManagerDashboard from "@/pages/ClubManagerDashboard";
 import LeaguesPage from "@/pages/LeaguesPage";
 import TeamsPage from "@/pages/TeamsPage";
 import PlayersPage from "@/pages/PlayersPage";
@@ -14,10 +15,20 @@ import MatchesPage from "@/pages/MatchesPage";
 import LiveScoringPage from "@/pages/LiveScoringPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
 import SettingsPage from "@/pages/SettingsPage";
+import ClubSettingsPage from "@/pages/ClubSettingsPage";
 
-const ALL_ADMIN_ROLES = ["superadmin", "club_manager", "clubManager", "match_manager", "matchManager"];
-const MANAGER_ROLES = ["superadmin", "club_manager", "clubManager"];
-const SCORER_ROLES = ["club_manager", "clubManager", "match_manager", "matchManager"];
+const ALL_ADMIN_ROLES = ["superAdmin", "clubManager", "matchManager"];
+const MANAGER_ROLES = ["superAdmin", "clubManager"];
+const SCORER_ROLES = ["superAdmin", "clubManager", "matchManager"];
+
+/**
+ * Role-based dashboard switcher — renders the appropriate dashboard
+ * based on the authenticated user's role.
+ */
+function RoleDashboard() {
+  const { isSuperAdmin } = useAppContext();
+  return isSuperAdmin ? <SuperAdminDashboard /> : <ClubManagerDashboard />;
+}
 
 export default function App() {
   const { isAuthenticated } = useAppContext();
@@ -38,10 +49,15 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<DashboardPage />} />
+        {/* Role-based dashboard */}
+        <Route index element={<RoleDashboard />} />
+
+        {/* SuperAdmin-only: Leagues management */}
         <Route path="leagues" element={
-          <ProtectedRoute allowedRoles={["superadmin"]}><LeaguesPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={["superAdmin"]}><LeaguesPage /></ProtectedRoute>
         } />
+
+        {/* ClubManager + SuperAdmin */}
         <Route path="tournaments" element={
           <ProtectedRoute allowedRoles={MANAGER_ROLES}><TournamentsPage /></ProtectedRoute>
         } />
@@ -54,17 +70,26 @@ export default function App() {
         <Route path="matches" element={
           <ProtectedRoute allowedRoles={MANAGER_ROLES}><MatchesPage /></ProtectedRoute>
         } />
+        <Route path="analytics" element={
+          <ProtectedRoute allowedRoles={MANAGER_ROLES}><AnalyticsPage /></ProtectedRoute>
+        } />
+
+        {/* Scoring */}
         <Route path="scoring/:matchId" element={
           <ProtectedRoute allowedRoles={SCORER_ROLES}><LiveScoringPage /></ProtectedRoute>
         } />
         <Route path="scoring" element={
           <ProtectedRoute allowedRoles={SCORER_ROLES}><LiveScoringPage /></ProtectedRoute>
         } />
-        <Route path="analytics" element={
-          <ProtectedRoute allowedRoles={MANAGER_ROLES}><AnalyticsPage /></ProtectedRoute>
-        } />
+
+        {/* Settings */}
         <Route path="settings" element={
-          <ProtectedRoute allowedRoles={["superadmin"]}><SettingsPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={["superAdmin"]}><SettingsPage /></ProtectedRoute>
+        } />
+
+        {/* Club Settings (ClubManager) */}
+        <Route path="club-settings" element={
+          <ProtectedRoute allowedRoles={["clubManager"]}><ClubSettingsPage /></ProtectedRoute>
         } />
       </Route>
 

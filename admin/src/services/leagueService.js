@@ -4,7 +4,8 @@ const leagueService = {
   // Admin routes
   adminGetAll: (params) => apiClient.get("/admin/leagues", { params }),
   adminCreate: (data) => apiClient.post("/admin/create-league", data),
-  assignManager: (id, data) => apiClient.put(`/admin/league/${id}/assign-manager`, data),
+  createManager: (id, data) => apiClient.post(`/admin/league/${id}/manager`, data),
+  updateManager: (id, managerId, data) => apiClient.put(`/admin/league/${id}/manager/${managerId}`, data),
   resetPassword: (id, data) => apiClient.put(`/admin/league/${id}/reset-password`, data),
 
   // League CRUD

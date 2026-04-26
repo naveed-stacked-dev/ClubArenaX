@@ -1,5 +1,12 @@
 const League = require('../models/League');
 const ApiError = require('../utils/ApiError');
+const { ROLES } = require('../utils/constants');
+
+const checkLeagueAccess = (league, user, role) => {
+  if (role === ROLES.SUPER_ADMIN) return;
+  if (role === ROLES.CLUB_MANAGER && league._id.toString() === user.leagueId?.toString()) return;
+  throw ApiError.forbidden('You can only update your own league');
+};
 
 /**
  * Create a new league.
@@ -70,12 +77,10 @@ const getLeagueById = async (id) => {
 /**
  * Update a league.
  */
-const updateLeague = async (id, data, superAdminId) => {
+const updateLeague = async (id, data, user, role) => {
   const league = await League.findById(id);
   if (!league) throw ApiError.notFound('League not found');
-  if (league.createdBy.toString() !== superAdminId.toString()) {
-    throw ApiError.forbidden('You can only update your own leagues');
-  }
+  checkLeagueAccess(league, user, role);
 
   // If slug is changed, check uniqueness
   if (data.slug && data.slug !== league.slug) {
@@ -91,12 +96,10 @@ const updateLeague = async (id, data, superAdminId) => {
 /**
  * Soft-delete (deactivate) a league.
  */
-const deleteLeague = async (id, superAdminId) => {
+const deleteLeague = async (id, user, role) => {
   const league = await League.findById(id);
   if (!league) throw ApiError.notFound('League not found');
-  if (league.createdBy.toString() !== superAdminId.toString()) {
-    throw ApiError.forbidden('You can only delete your own leagues');
-  }
+  checkLeagueAccess(league, user, role);
 
   league.isActive = false;
   await league.save();
@@ -106,12 +109,10 @@ const deleteLeague = async (id, superAdminId) => {
 /**
  * Update league theme.
  */
-const updateTheme = async (id, themeData, superAdminId) => {
+const updateTheme = async (id, themeData, user, role) => {
   const league = await League.findById(id);
   if (!league) throw ApiError.notFound('League not found');
-  if (league.createdBy.toString() !== superAdminId.toString()) {
-    throw ApiError.forbidden('You can only update your own leagues');
-  }
+  checkLeagueAccess(league, user, role);
 
   league.theme = { ...league.theme, ...themeData };
   await league.save();
@@ -121,12 +122,10 @@ const updateTheme = async (id, themeData, superAdminId) => {
 /**
  * Update league settings.
  */
-const updateSettings = async (id, settingsData, superAdminId) => {
+const updateSettings = async (id, settingsData, user, role) => {
   const league = await League.findById(id);
   if (!league) throw ApiError.notFound('League not found');
-  if (league.createdBy.toString() !== superAdminId.toString()) {
-    throw ApiError.forbidden('You can only update your own leagues');
-  }
+  checkLeagueAccess(league, user, role);
 
   league.settings = { ...league.settings, ...settingsData };
   await league.save();
@@ -136,12 +135,10 @@ const updateSettings = async (id, settingsData, superAdminId) => {
 /**
  * Update league logo.
  */
-const updateLogo = async (id, logo, superAdminId) => {
+const updateLogo = async (id, logo, user, role) => {
   const league = await League.findById(id);
   if (!league) throw ApiError.notFound('League not found');
-  if (league.createdBy.toString() !== superAdminId.toString()) {
-    throw ApiError.forbidden('You can only update your own leagues');
-  }
+  checkLeagueAccess(league, user, role);
 
   league.logo = logo;
   await league.save();

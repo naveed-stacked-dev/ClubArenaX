@@ -19,7 +19,7 @@ import { Swords, Plus, MoreHorizontal, Pencil, CalendarDays, Loader2, Search, Sh
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
-const FORMATS = ["round-robin", "knockout", "group-stage"];
+const FORMATS = ["league", "knockout"];
 const STATUSES = ["upcoming", "ongoing", "completed"];
 
 export default function TournamentsPage() {
@@ -39,15 +39,19 @@ export default function TournamentsPage() {
   const [pointsTable, setPointsTable] = useState([]);
   const [pointsLoading, setPointsLoading] = useState(false);
 
-  const [form, setForm] = useState({ name: "", format: "round-robin", startDate: "", endDate: "" });
+  const [form, setForm] = useState({ name: "", type: "league", startDate: "", endDate: "" });
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = user?.role === "superadmin" ? await leagueService.adminGetAll() : await leagueService.getAll();
-        const data = res.data?.data || res.data?.leagues || res.data || [];
-        setLeagues(Array.isArray(data) ? data : []);
-        if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+        if (user?.role === "superAdmin") {
+          const res = await leagueService.adminGetAll();
+          const data = res.data?.data || res.data?.leagues || res.data || [];
+          setLeagues(Array.isArray(data) ? data : []);
+          if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+        } else {
+          if (user?.leagueId) setSelectedLeague(user.leagueId);
+        }
       } catch { /* interceptor */ }
       finally { setLeagueLoading(false); }
     };
@@ -74,7 +78,7 @@ export default function TournamentsPage() {
       await tournamentService.create({ ...form, league: selectedLeague });
       toast.success("Tournament created");
       setShowCreate(false);
-      setForm({ name: "", format: "round-robin", startDate: "", endDate: "" });
+      setForm({ name: "", type: "league", startDate: "", endDate: "" });
       fetchTournaments();
     } catch { /* interceptor */ } finally { setSubmitting(false); }
   };
@@ -112,7 +116,7 @@ export default function TournamentsPage() {
     setSelected(t);
     setForm({
       name: t.name || "",
-      format: t.format || "round-robin",
+      type: t.type || "league",
       startDate: t.startDate ? new Date(t.startDate).toISOString().split('T')[0] : "",
       endDate: t.endDate ? new Date(t.endDate).toISOString().split('T')[0] : ""
     });
@@ -134,16 +138,18 @@ export default function TournamentsPage() {
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Swords className="w-6 h-6 text-amber-500" /> Tournaments</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage tournaments, formats, and fixtures</p>
         </div>
-        <Button onClick={() => { setForm({ name: "", format: "round-robin", startDate: "", endDate: "" }); setShowCreate(true); }} disabled={!selectedLeague} className="bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:opacity-90">
+        <Button onClick={() => { setForm({ name: "", type: "league", startDate: "", endDate: "" }); setShowCreate(true); }} disabled={!selectedLeague} className="bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:opacity-90">
           <Plus className="w-4 h-4 mr-2" /> Create Tournament
         </Button>
       </motion.div>
 
       <motion.div variants={item} className="flex flex-col sm:flex-row gap-3">
-        <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
-          <SelectTrigger className="w-full sm:w-[260px]"><SelectValue placeholder="Select a league" /></SelectTrigger>
-          <SelectContent>{leagues.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}</SelectContent>
-        </Select>
+        {user?.role === "superAdmin" && (
+          <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
+            <SelectTrigger className="w-full sm:w-[260px]"><SelectValue placeholder="Select a league" /></SelectTrigger>
+            <SelectContent>{leagues.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}</SelectContent>
+          </Select>
+        )}
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Search tournaments..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
@@ -164,7 +170,7 @@ export default function TournamentsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Tournament</TableHead>
-                    <TableHead>Format</TableHead>
+                    <TableHead>Type</TableHead>
                     <TableHead>Dates</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="w-12"></TableHead>
@@ -181,7 +187,7 @@ export default function TournamentsPage() {
                           <span className="font-medium text-sm">{t.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell><Badge variant="outline" className="capitalize text-xs">{t.format?.replace('-', ' ')}</Badge></TableCell>
+                      <TableCell><Badge variant="outline" className="capitalize text-xs">{t.type}</Badge></TableCell>
                       <TableCell className="text-sm text-muted-foreground">
                         {t.startDate ? new Date(t.startDate).toLocaleDateString() : "?"} - {t.endDate ? new Date(t.endDate).toLocaleDateString() : "?"}
                       </TableCell>
@@ -212,10 +218,10 @@ export default function TournamentsPage() {
           <div className="space-y-4 py-2">
             <div className="space-y-2"><Label>Name</Label><Input placeholder="Tournament Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div className="space-y-2">
-              <Label>Format</Label>
-              <Select value={form.format} onValueChange={(v) => setForm({ ...form, format: v })}>
+              <Label>Type</Label>
+              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{FORMATS.map((f) => <SelectItem key={f} value={f} className="capitalize">{f.replace('-', ' ')}</SelectItem>)}</SelectContent>
+                <SelectContent>{FORMATS.map((f) => <SelectItem key={f} value={f} className="capitalize">{f}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -237,10 +243,10 @@ export default function TournamentsPage() {
           <div className="space-y-4 py-2">
             <div className="space-y-2"><Label>Name</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div className="space-y-2">
-              <Label>Format</Label>
-              <Select value={form.format} onValueChange={(v) => setForm({ ...form, format: v })}>
+              <Label>Type</Label>
+              <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>{FORMATS.map((f) => <SelectItem key={f} value={f} className="capitalize">{f.replace('-', ' ')}</SelectItem>)}</SelectContent>
+                <SelectContent>{FORMATS.map((f) => <SelectItem key={f} value={f} className="capitalize">{f}</SelectItem>)}</SelectContent>
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
