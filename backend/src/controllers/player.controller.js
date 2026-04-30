@@ -22,10 +22,10 @@ const create = async (req, res, next) => {
   }
 };
 
-const getByLeague = async (req, res, next) => {
+const getByClub = async (req, res, next) => {
   try {
-    const { players, total } = await playerService.getPlayersByLeague(
-      req.params.leagueId,
+    const { players, total } = await playerService.getPlayersByClub(
+      req.params.clubId,
       req.pagination,
       req.query.teamId || null
     );
@@ -99,4 +99,4 @@ const getRecentMatches = async (req, res, next) => {
   }
 };
 
-module.exports = { create, getByLeague, getById, getByTeam, update, remove, getStats, getRecentMatches };
+module.exports = { create, getByClub, getById, getByTeam, update, remove, getStats, getRecentMatches };

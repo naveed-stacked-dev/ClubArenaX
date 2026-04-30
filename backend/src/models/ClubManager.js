@@ -21,10 +21,10 @@ const clubManagerSchema = new mongoose.Schema(
       minlength: 6,
       select: false,
     },
-    leagueId: {
+    clubId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'League',
-      required: [true, 'League ID is required'],
+      ref: 'Club',
+      required: [true, 'Club ID is required'],
       index: true,
     },
     refreshToken: {

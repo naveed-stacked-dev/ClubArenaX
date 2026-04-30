@@ -56,7 +56,7 @@ const errorHandler = (err, req, res, next) => {
   if (err.name === 'CastError') {
     const friendlyPaths = {
       _id: 'ID',
-      leagueId: 'league ID',
+      clubId: 'club ID',
       teamId: 'team ID',
       playerId: 'player ID',
       matchId: 'match ID',

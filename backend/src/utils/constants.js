@@ -14,7 +14,7 @@ const MATCH_STATUS = {
 };
 
 const TOURNAMENT_TYPE = {
-  LEAGUE: 'league',
+  CLUB: 'club',
   KNOCKOUT: 'knockout',
 };
 

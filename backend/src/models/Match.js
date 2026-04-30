@@ -5,12 +5,10 @@ const matchSchema = new mongoose.Schema(
     teamA: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Team',
-      required: [true, 'Team A is required'],
     },
     teamB: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Team',
-      required: [true, 'Team B is required'],
     },
     tournamentId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -18,10 +16,10 @@ const matchSchema = new mongoose.Schema(
       required: [true, 'Tournament ID is required'],
       index: true,
     },
-    leagueId: {
+    clubId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'League',
-      required: [true, 'League ID is required'],
+      ref: 'Club',
+      required: [true, 'Club ID is required'],
       index: true,
     },
     status: {
@@ -67,6 +65,13 @@ const matchSchema = new mongoose.Schema(
       margin: { type: String },
       summary: { type: String },
     },
+    tournamentMeta: {
+      isKnockout: { type: Boolean, default: false },
+      roundNumber: { type: Number, default: null },
+      nextMatchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Match', default: null },
+      // Which slot (A or B) the winner fills in the next match
+      nextMatchSlot: { type: String, enum: ['A', 'B', null], default: null },
+    },
     oversPerInning: {
       type: Number,
       default: 20,
@@ -77,6 +82,26 @@ const matchSchema = new mongoose.Schema(
     },
     round: {
       type: Number,
+      default: null,
+    },
+    // Position within the current round (0-indexed)
+    matchOrder: {
+      type: Number,
+      default: null,
+    },
+    // Whether this match is an auto-advance BYE
+    isBye: {
+      type: Boolean,
+      default: false,
+    },
+    // Whether this is the final match of the tournament
+    isFinal: {
+      type: Boolean,
+      default: false,
+    },
+    // Human-readable label: "QF1", "SF2", "Final"
+    matchLabel: {
+      type: String,
       default: null,
     },
     assignedManager: {
@@ -93,8 +118,9 @@ const matchSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-matchSchema.index({ leagueId: 1, status: 1 });
+matchSchema.index({ clubId: 1, status: 1 });
 matchSchema.index({ tournamentId: 1, status: 1 });
+matchSchema.index({ tournamentId: 1, round: 1, matchOrder: 1 });
 matchSchema.index({ venue: 'text' });
 
 module.exports = mongoose.model('Match', matchSchema);

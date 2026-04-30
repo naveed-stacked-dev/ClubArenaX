@@ -5,11 +5,11 @@ const { buildPaginationResponse } = require('../middlewares/pagination.middlewar
 const getAll = async (req, res, next) => {
   try {
     const filter = {};
-    // Tenant-scoped: ClubManagers auto-filter by their leagueId
-    if (req.leagueId) {
-      filter.leagueId = req.leagueId;
-    } else if (req.query.leagueId) {
-      filter.leagueId = req.query.leagueId;
+    // Tenant-scoped: ClubManagers auto-filter by their clubId
+    if (req.clubId) {
+      filter.clubId = req.clubId;
+    } else if (req.query.clubId) {
+      filter.clubId = req.query.clubId;
     }
     if (req.query.status) filter.status = req.query.status;
     if (req.query.tournamentId) filter.tournamentId = req.query.tournamentId;
@@ -42,7 +42,7 @@ const update = async (req, res, next) => {
 
 const getLive = async (req, res, next) => {
   try {
-    const matches = await matchService.getLiveMatches(req.params.leagueId);
+    const matches = await matchService.getLiveMatches(req.params.clubId);
     res.json(ApiResponse.ok(matches));
   } catch (error) {
     next(error);

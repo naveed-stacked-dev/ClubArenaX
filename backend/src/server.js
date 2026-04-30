@@ -33,7 +33,7 @@ const startServer = async () => {
   const PORT = config.port;
   server.listen(PORT, () => {
     console.log(`\n🏏 ════════════════════════════════════════════`);
-    console.log(`   Cricket League API Server`);
+    console.log(`   Club Arena X API Server`);
     console.log(`   Environment: ${config.nodeEnv}`);
     console.log(`   HTTP:        http://localhost:${PORT}`);
     console.log(`   WebSocket:   ws://localhost:${PORT}`);

@@ -774,7 +774,7 @@ async function recalculatePlayerStats(matchId) {
   // Update each player's stats cache
   for (const [playerId, batting] of Object.entries(playerBatting)) {
     await PlayerStatsCache.findOneAndUpdate(
-      { playerId, leagueId: match.leagueId },
+      { playerId, clubId: match.clubId },
       {
         $inc: {
           totalRuns: batting.runs,
@@ -793,7 +793,7 @@ async function recalculatePlayerStats(matchId) {
     );
 
     // Recalculate derived stats
-    const cache = await PlayerStatsCache.findOne({ playerId, leagueId: match.leagueId });
+    const cache = await PlayerStatsCache.findOne({ playerId, clubId: match.clubId });
     if (cache) {
       cache.strikeRate = cache.totalBallsFaced > 0
         ? parseFloat(((cache.totalRuns / cache.totalBallsFaced) * 100).toFixed(2))
@@ -816,7 +816,7 @@ async function recalculatePlayerStats(matchId) {
 
   for (const [playerId, bowling] of Object.entries(playerBowling)) {
     await PlayerStatsCache.findOneAndUpdate(
-      { playerId, leagueId: match.leagueId },
+      { playerId, clubId: match.clubId },
       {
         $inc: {
           totalWickets: bowling.wickets,
@@ -831,7 +831,7 @@ async function recalculatePlayerStats(matchId) {
       { upsert: true }
     );
 
-    const cache = await PlayerStatsCache.findOne({ playerId, leagueId: match.leagueId });
+    const cache = await PlayerStatsCache.findOne({ playerId, clubId: match.clubId });
     if (cache) {
       const oversBowled = cache.totalBallsBowled / 6;
       cache.totalOversBowled = parseFloat(oversBowled.toFixed(1));
@@ -857,7 +857,7 @@ async function recalculatePlayerStats(matchId) {
   ]);
   for (const pid of allPlayerIds) {
     await PlayerStatsCache.findOneAndUpdate(
-      { playerId: pid, leagueId: match.leagueId },
+      { playerId: pid, clubId: match.clubId },
       { $inc: { totalMatches: 1 } }
     );
   }

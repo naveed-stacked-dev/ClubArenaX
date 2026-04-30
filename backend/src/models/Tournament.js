@@ -43,24 +43,37 @@ const tournamentSchema = new mongoose.Schema(
       },
     ],
     pointsTable: [pointsEntrySchema],
-    leagueId: {
+    clubId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'League',
-      required: [true, 'League ID is required'],
+      ref: 'Club',
+      required: [true, 'Club ID is required'],
       index: true,
     },
     status: {
       type: String,
-      enum: ['draft', 'active', 'completed'],
+      enum: ['draft', 'upcoming', 'ongoing', 'completed', 'cancelled'],
       default: 'draft',
     },
     season: {
       type: String,
       default: null,
     },
-    oversPerInning: {
-      type: Number,
-      default: 20,
+    startDate: {
+      type: Date,
+      default: null,
+    },
+    endDate: {
+      type: Date,
+      default: null,
+    },
+    settings: {
+      oversPerInning: {
+        type: Number,
+        default: 20,
+      },
+      pointsPerWin: { type: Number, default: 2 },
+      pointsPerTie: { type: Number, default: 1 },
+      pointsPerLoss: { type: Number, default: 0 },
     },
   },
   { timestamps: true }

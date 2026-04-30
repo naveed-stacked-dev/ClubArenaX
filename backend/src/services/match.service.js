@@ -50,6 +50,14 @@ const updateMatch = async (id, data) => {
     data.youtubeStreamUrl = embedUrl;
   }
 
+  const existingMatch = await Match.findById(id);
+  if (!existingMatch) throw ApiError.notFound('Match not found');
+
+  // If setting a start time for an unscheduled match, make it upcoming
+  if (data.startTime && existingMatch.status === 'unscheduled' && !data.status) {
+    data.status = 'upcoming';
+  }
+
   const match = await Match.findByIdAndUpdate(id, data, {
     new: true,
     runValidators: true,
@@ -61,10 +69,10 @@ const updateMatch = async (id, data) => {
 };
 
 /**
- * Get live matches for a league.
+ * Get live matches for a club.
  */
-const getLiveMatches = async (leagueId) => {
-  const matches = await Match.find({ leagueId, status: 'live' })
+const getLiveMatches = async (clubId) => {
+  const matches = await Match.find({ clubId, status: 'live' })
     .populate('teamA', 'name logo')
     .populate('teamB', 'name logo')
     .populate('tournamentId', 'name');
@@ -88,6 +96,9 @@ const getMatchesByTournament = async (tournamentId, { skip, limit }) => {
 };
 
 const createMatch = async (data) => {
+  if (data.startTime) {
+    data.status = 'upcoming';
+  }
   const match = await Match.create(data);
   return match;
 };

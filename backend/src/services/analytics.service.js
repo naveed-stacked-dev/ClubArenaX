@@ -304,15 +304,15 @@ const getHeadToHead = async (teamId, opponentId) => {
  *  LEADERBOARDS
  * ──────────────────────────────────────────
  */
-const getLeaderboard = async (leagueId, { skip, limit }) => {
+const getLeaderboard = async (clubId, { skip, limit }) => {
   const [topScorers, topWicketTakers] = await Promise.all([
-    PlayerStatsCache.find({ leagueId, totalRuns: { $gt: 0 } })
+    PlayerStatsCache.find({ clubId, totalRuns: { $gt: 0 } })
       .sort({ totalRuns: -1 })
       .skip(skip)
       .limit(limit)
       .populate('playerId', 'name role teamId')
       .lean(),
-    PlayerStatsCache.find({ leagueId, totalWickets: { $gt: 0 } })
+    PlayerStatsCache.find({ clubId, totalWickets: { $gt: 0 } })
       .sort({ totalWickets: -1 })
       .skip(skip)
       .limit(limit)
@@ -355,9 +355,9 @@ const getLeaderboard = async (leagueId, { skip, limit }) => {
  *  MOST VALUABLE PLAYER (MVP aggregation)
  * ──────────────────────────────────────────
  */
-const getMVP = async (leagueId) => {
+const getMVP = async (clubId) => {
   const result = await PlayerStatsCache.aggregate([
-    { $match: { leagueId: require('mongoose').Types.ObjectId(leagueId) } },
+    { $match: { clubId: require('mongoose').Types.ObjectId(clubId) } },
     {
       $addFields: {
         mvpScore: {

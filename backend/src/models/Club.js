@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
-const leagueSchema = new mongoose.Schema(
+const clubSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: [true, 'League name is required'],
+      required: [true, 'Club name is required'],
       trim: true,
     },
     slug: {
@@ -56,7 +56,7 @@ const leagueSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-leagueSchema.index({ createdBy: 1 });
-leagueSchema.index({ name: 'text', slug: 'text' });
+clubSchema.index({ createdBy: 1 });
+clubSchema.index({ name: 'text', slug: 'text' });
 
-module.exports = mongoose.model('League', leagueSchema);
+module.exports = mongoose.model('Club', clubSchema);

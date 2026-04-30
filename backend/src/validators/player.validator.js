@@ -9,8 +9,8 @@ const createPlayerSchema = Joi.object({
     .messages({ 'any.required': 'Player role is required', 'any.only': 'Role must be batsman, bowler, allrounder, or wicketkeeper' }),
   teamId: objectId.required()
     .messages({ 'any.required': 'Team ID is required' }),
-  leagueId: objectId.required()
-    .messages({ 'any.required': 'League ID is required' }),
+  clubId: objectId.required()
+    .messages({ 'any.required': 'Club ID is required' }),
   avatar: Joi.string().uri().allow(null, '').optional(),
   battingStyle: Joi.string().valid('right-hand', 'left-hand').default('right-hand'),
   bowlingStyle: Joi.string().allow(null, '').optional(),

@@ -8,9 +8,9 @@ const playerStatsCacheSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    leagueId: {
+    clubId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'League',
+      ref: 'Club',
       required: true,
       index: true,
     },
@@ -56,8 +56,8 @@ const playerStatsCacheSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-playerStatsCacheSchema.index({ leagueId: 1, totalRuns: -1 });
-playerStatsCacheSchema.index({ leagueId: 1, totalWickets: -1 });
-playerStatsCacheSchema.index({ playerId: 1, leagueId: 1 }, { unique: true });
+playerStatsCacheSchema.index({ clubId: 1, totalRuns: -1 });
+playerStatsCacheSchema.index({ clubId: 1, totalWickets: -1 });
+playerStatsCacheSchema.index({ playerId: 1, clubId: 1 }, { unique: true });
 
 module.exports = mongoose.model('PlayerStatsCache', playerStatsCacheSchema);

@@ -18,10 +18,10 @@ const playerSchema = new mongoose.Schema(
       required: [true, 'Team ID is required'],
       index: true,
     },
-    leagueId: {
+    clubId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'League',
-      required: [true, 'League ID is required'],
+      ref: 'Club',
+      required: [true, 'Club ID is required'],
       index: true,
     },
     avatar: {
@@ -57,6 +57,6 @@ const playerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-playerSchema.index({ leagueId: 1, teamId: 1 });
+playerSchema.index({ clubId: 1, teamId: 1 });
 
 module.exports = mongoose.model('Player', playerSchema);

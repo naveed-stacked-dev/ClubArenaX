@@ -33,9 +33,9 @@ const matchManagerSchema = new mongoose.Schema(
       sparse: true,
       index: true,
     },
-    leagueId: {
+    clubId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'League',
+      ref: 'Club',
       required: true,
       index: true,
     },

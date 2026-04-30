@@ -31,8 +31,8 @@ const getTeamAnalytics = async (req, res, next) => {
 
 const getLeaderboard = async (req, res, next) => {
   try {
-    const { leagueId } = req.params;
-    const data = await analyticsService.getLeaderboard(leagueId, req.pagination);
+    const { clubId } = req.params;
+    const data = await analyticsService.getLeaderboard(clubId, req.pagination);
     res.json(ApiResponse.ok(data));
   } catch (error) {
     next(error);

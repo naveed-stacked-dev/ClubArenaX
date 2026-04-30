@@ -21,10 +21,10 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
       select: false,
     },
-    favoriteLeagues: [
+    favoriteClubs: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'League',
+        ref: 'Club',
       },
     ],
     refreshToken: {

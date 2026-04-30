@@ -49,7 +49,7 @@ app.use('/api', routes);
 app.get('/', (req, res) => {
   res.json({
     success: true,
-    message: '🏏 Cricket League Management Platform API',
+    message: '🏏 Club Arena X Management Platform API',
     version: '1.0.0',
     docs: '/api/health',
   });

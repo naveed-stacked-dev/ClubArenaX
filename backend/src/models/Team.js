@@ -27,17 +27,17 @@ const teamSchema = new mongoose.Schema(
       ref: 'Player',
       default: null,
     },
-    leagueId: {
+    clubId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'League',
-      required: [true, 'League ID is required'],
+      ref: 'Club',
+      required: [true, 'Club ID is required'],
       index: true,
     },
   },
   { timestamps: true }
 );
 
-teamSchema.index({ leagueId: 1, name: 1 }, { unique: true });
+teamSchema.index({ clubId: 1, name: 1 }, { unique: true });
 teamSchema.index({ name: 'text' });
 
 module.exports = mongoose.model('Team', teamSchema);

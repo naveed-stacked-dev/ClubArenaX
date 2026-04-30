@@ -4,7 +4,7 @@ const ApiError = require('../utils/ApiError');
 
 /**
  * Upload a club logo image.
- * Expects: req.file (from multer), req.body.leagueId or req.params.leagueId
+ * Expects: req.file (from multer), req.body.clubId or req.params.clubId
  */
 const uploadClubLogo = async (req, res, next) => {
   try {
@@ -14,10 +14,10 @@ const uploadClubLogo = async (req, res, next) => {
       throw ApiError.badRequest(validation.error, 'INVALID_FILE');
     }
 
-    const leagueId = req.params.leagueId || req.body.leagueId;
-    if (!leagueId) throw ApiError.badRequest('League ID is required');
+    const clubId = req.params.clubId || req.body.clubId;
+    if (!clubId) throw ApiError.badRequest('Club ID is required');
 
-    const key = generateKey(`clubs/${leagueId}/logo`, file.originalname);
+    const key = generateKey(`clubs/${clubId}/logo`, file.originalname);
     const imageUrl = await uploadToS3(file.buffer, key, file.mimetype);
 
     res.json(ApiResponse.ok({ imageUrl }, 'Logo uploaded successfully'));
@@ -37,10 +37,10 @@ const uploadClubBanner = async (req, res, next) => {
       throw ApiError.badRequest(validation.error, 'INVALID_FILE');
     }
 
-    const leagueId = req.params.leagueId || req.body.leagueId;
-    if (!leagueId) throw ApiError.badRequest('League ID is required');
+    const clubId = req.params.clubId || req.body.clubId;
+    if (!clubId) throw ApiError.badRequest('Club ID is required');
 
-    const key = generateKey(`clubs/${leagueId}/banner`, file.originalname);
+    const key = generateKey(`clubs/${clubId}/banner`, file.originalname);
     const imageUrl = await uploadToS3(file.buffer, key, file.mimetype);
 
     res.json(ApiResponse.ok({ imageUrl }, 'Banner uploaded successfully'));

@@ -2,11 +2,11 @@ const ApiError = require('../utils/ApiError');
 const { ROLES } = require('../utils/constants');
 
 /**
- * Attach tenant (leagueId) context to the request based on the user's role.
+ * Attach tenant (clubId) context to the request based on the user's role.
  * 
- * - SuperAdmin:  req.leagueId = null (unrestricted access to all leagues)
- * - ClubManager: req.leagueId = user.leagueId (enforced single-league access)
- * - MatchManager: req.leagueId = user.leagueId (scoped to their league)
+ * - SuperAdmin:  req.clubId = null (unrestricted access to all clubs)
+ * - ClubManager: req.clubId = user.clubId (enforced single-club access)
+ * - MatchManager: req.clubId = user.clubId (scoped to their club)
  *
  * Must be used AFTER authenticate middleware.
  */
@@ -17,71 +17,71 @@ const attachTenant = (req, res, next) => {
 
   switch (req.userRole) {
     case ROLES.SUPER_ADMIN:
-      // SuperAdmin has global access — leagueId stays null unless explicitly set
-      req.leagueId = req.query.leagueId || req.body.leagueId || null;
+      // SuperAdmin has global access — clubId stays null unless explicitly set
+      req.clubId = req.query.clubId || req.body.clubId || null;
       break;
 
     case ROLES.CLUB_MANAGER:
-      // ClubManager is always scoped to their assigned league
-      req.leagueId = req.user.leagueId?.toString() || null;
-      if (!req.leagueId) {
-        return next(ApiError.forbidden('Your account is not assigned to any league'));
+      // ClubManager is always scoped to their assigned club
+      req.clubId = req.user.clubId?.toString() || null;
+      if (!req.clubId) {
+        return next(ApiError.forbidden('Your account is not assigned to any club'));
       }
       break;
 
     case ROLES.MATCH_MANAGER:
-      // MatchManager is scoped to their assigned league
-      req.leagueId = req.user.leagueId?.toString() || null;
+      // MatchManager is scoped to their assigned club
+      req.clubId = req.user.clubId?.toString() || null;
       break;
 
     default:
-      req.leagueId = null;
+      req.clubId = null;
   }
 
   next();
 };
 
 /**
- * Enforce that the requested leagueId (from URL params or body) matches
- * the tenant's scoped leagueId.
+ * Enforce that the requested clubId (from URL params or body) matches
+ * the tenant's scoped clubId.
  *
  * SuperAdmins pass through freely.
- * ClubManagers/MatchManagers get 403 if they try to access a different league.
+ * ClubManagers/MatchManagers get 403 if they try to access a different club.
  *
- * Checks: req.params.leagueId, req.body.leagueId
+ * Checks: req.params.clubId, req.body.clubId
  */
-const requireLeagueAccess = (req, res, next) => {
-  // SuperAdmin can access any league
+const requireClubAccess = (req, res, next) => {
+  // SuperAdmin can access any club
   if (req.userRole === ROLES.SUPER_ADMIN) {
     return next();
   }
 
-  // For scoped roles, verify the requested league matches their tenant
-  const requestedLeagueId =
-    req.params.leagueId || req.body.leagueId || req.query.leagueId;
+  // For scoped roles, verify the requested club matches their tenant
+  const requestedClubId =
+    req.params.clubId || req.body.clubId || req.query.clubId || req.params.id;
 
-  if (requestedLeagueId && req.leagueId && requestedLeagueId !== req.leagueId) {
-    return next(ApiError.leagueAccessDenied());
+  if (requestedClubId && req.clubId && requestedClubId !== req.clubId) {
+    return next(ApiError.clubAccessDenied());
   }
 
   next();
 };
 
 /**
- * Force-inject the tenant's leagueId into the request body.
- * Ensures ClubManagers can't spoof a different leagueId in POST/PUT.
+ * Force-inject the tenant's clubId into the request body.
+ * Ensures ClubManagers can't spoof a different clubId in POST/PUT.
  *
- * SuperAdmins keep whatever leagueId they send.
+ * SuperAdmins keep whatever clubId they send.
  */
-const injectLeagueId = (req, res, next) => {
-  if (req.userRole !== ROLES.SUPER_ADMIN && req.leagueId) {
-    req.body.leagueId = req.leagueId;
+const injectClubId = (req, res, next) => {
+  if (req.userRole !== ROLES.SUPER_ADMIN && req.clubId) {
+    req.body.clubId = req.clubId;
   }
   next();
 };
 
 module.exports = {
   attachTenant,
-  requireLeagueAccess,
-  injectLeagueId,
+  requireClubAccess,
+  injectClubId,
 };

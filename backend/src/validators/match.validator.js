@@ -7,7 +7,7 @@ const createMatchSchema = Joi.object({
   teamA: objectId.required().messages({ 'any.required': 'Team A is required' }),
   teamB: objectId.required().messages({ 'any.required': 'Team B is required' }),
   tournamentId: objectId.required().messages({ 'any.required': 'Tournament ID is required' }),
-  leagueId: objectId.required().messages({ 'any.required': 'League ID is required' }),
+  clubId: objectId.required().messages({ 'any.required': 'Club ID is required' }),
   venue: Joi.string().trim().max(200).allow(null, '').optional(),
   startTime: Joi.date().iso().allow(null).optional(),
   oversPerInning: Joi.number().integer().min(1).max(50).default(20),

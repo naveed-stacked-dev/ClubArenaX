@@ -1,4 +1,4 @@
-const leagueService = require('../services/league.service');
+const clubService = require('../services/club.service');
 const matchService = require('../services/match.service');
 const tournamentService = require('../services/tournament.service');
 const scoringService = require('../services/scoring.service');
@@ -9,20 +9,20 @@ const ApiResponse = require('../utils/ApiResponse');
 const { buildPaginationResponse } = require('../middlewares/pagination.middleware');
 
 // We re-export only the reads that are publicly accessible without authentication.
-const getLeagues = async (req, res, next) => {
+const getClubs = async (req, res, next) => {
   try {
-    const { leagues, total } = await leagueService.getAllLeagues(req.pagination);
+    const { clubs, total } = await clubService.getAllClubs(req.pagination);
     const pagination = buildPaginationResponse(total, req.pagination);
-    res.json(ApiResponse.paginated(leagues, pagination));
+    res.json(ApiResponse.paginated(clubs, pagination));
   } catch (error) {
     next(error);
   }
 };
 
-const getLeagueBySlug = async (req, res, next) => {
+const getClubBySlug = async (req, res, next) => {
   try {
-    const league = await leagueService.getLeagueBySlug(req.params.slug);
-    res.json(ApiResponse.ok(league));
+    const club = await clubService.getClubBySlug(req.params.slug);
+    res.json(ApiResponse.ok(club));
   } catch (error) {
     next(error);
   }
@@ -30,7 +30,7 @@ const getLeagueBySlug = async (req, res, next) => {
 
 const getLiveMatches = async (req, res, next) => {
   try {
-    const matches = await matchService.getLiveMatches(req.params.leagueId);
+    const matches = await matchService.getLiveMatches(req.params.clubId);
     res.json(ApiResponse.ok(matches));
   } catch (error) {
     next(error);
@@ -55,9 +55,9 @@ const getMatchScorecard = async (req, res, next) => {
   }
 };
 
-const getLeagueLeaderboard = async (req, res, next) => {
+const getClubLeaderboard = async (req, res, next) => {
   try {
-    const data = await analyticsService.getLeaderboard(req.params.leagueId, req.pagination);
+    const data = await analyticsService.getLeaderboard(req.params.clubId, req.pagination);
     res.json(ApiResponse.ok(data));
   } catch (error) {
     next(error);
@@ -75,11 +75,11 @@ const getPointsTable = async (req, res, next) => {
 };
 
 module.exports = {
-  getLeagues,
-  getLeagueBySlug,
+  getClubs,
+  getClubBySlug,
   getLiveMatches,
   getMatchSummary,
   getMatchScorecard,
-  getLeagueLeaderboard,
+  getClubLeaderboard,
   getPointsTable,
 };

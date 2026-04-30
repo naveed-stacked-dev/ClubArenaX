@@ -2,9 +2,9 @@ const Joi = require('joi');
 
 const objectId = Joi.string().regex(/^[a-fA-F0-9]{24}$/).message('{{#label}} must be a valid ID');
 
-const createLeagueSchema = Joi.object({
+const createClubSchema = Joi.object({
   name: Joi.string().trim().min(2).max(100).required()
-    .messages({ 'any.required': 'League name is required', 'string.min': 'League name must be at least 2 characters' }),
+    .messages({ 'any.required': 'Club name is required', 'string.min': 'Club name must be at least 2 characters' }),
   slug: Joi.string().trim().lowercase().pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional()
     .messages({ 'string.pattern.base': 'Slug must only contain lowercase letters, numbers, and hyphens' }),
   logo: Joi.string().uri().allow(null, '').optional(),
@@ -20,7 +20,7 @@ const createLeagueSchema = Joi.object({
   }).optional(),
 });
 
-const updateLeagueSchema = Joi.object({
+const updateClubSchema = Joi.object({
   name: Joi.string().trim().min(2).max(100).optional(),
   slug: Joi.string().trim().lowercase().pattern(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional()
     .messages({ 'string.pattern.base': 'Slug must only contain lowercase letters, numbers, and hyphens' }),
@@ -61,8 +61,8 @@ const updateLogoSchema = Joi.object({
 });
 
 module.exports = {
-  createLeagueSchema,
-  updateLeagueSchema,
+  createClubSchema,
+  updateClubSchema,
   updateThemeSchema,
   updateSettingsSchema,
   updateLogoSchema,

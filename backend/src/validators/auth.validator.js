@@ -27,8 +27,8 @@ const registerClubManagerSchema = Joi.object({
     .messages({ 'any.required': 'Email is required', 'string.email': 'Please enter a valid email address' }),
   password: Joi.string().min(6).max(128).required()
     .messages({ 'any.required': 'Password is required', 'string.min': 'Password must be at least 6 characters' }),
-  leagueId: objectId.required()
-    .messages({ 'any.required': 'League ID is required' }),
+  clubId: objectId.required()
+    .messages({ 'any.required': 'Club ID is required' }),
 });
 
 // ─── MatchManager ────────────────────────────────────────────────
@@ -38,8 +38,8 @@ const createMatchManagerSchema = Joi.object({
   email: Joi.string().trim().lowercase().email().optional(),
   password: Joi.string().min(6).max(128).optional(),
   matchId: objectId.optional(),
-  leagueId: objectId.required()
-    .messages({ 'any.required': 'League ID is required' }),
+  clubId: objectId.required()
+    .messages({ 'any.required': 'Club ID is required' }),
   accessType: Joi.string().valid('login', 'token').default('token'),
 });
 

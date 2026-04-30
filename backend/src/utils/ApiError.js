@@ -85,8 +85,8 @@ class ApiError extends Error {
     );
   }
 
-  static leagueAccessDenied() {
-    return new ApiError(403, 'You do not have access to this league', 'LEAGUE_ACCESS_DENIED');
+  static clubAccessDenied() {
+    return new ApiError(403, 'You do not have access to this club', 'CLUB_ACCESS_DENIED');
   }
 
   static matchAccessDenied() {
@@ -98,8 +98,8 @@ class ApiError extends Error {
     return new ApiError(404, `${resource} not found`, 'NOT_FOUND');
   }
 
-  static leagueNotFound() {
-    return new ApiError(404, 'League not found', 'LEAGUE_NOT_FOUND');
+  static clubNotFound() {
+    return new ApiError(404, 'Club not found', 'CLUB_NOT_FOUND');
   }
 
   static teamNotFound() {
@@ -136,11 +136,11 @@ class ApiError extends Error {
   }
 
   static duplicateSlug() {
-    return new ApiError(409, 'A league with this URL slug already exists', 'DUPLICATE_SLUG');
+    return new ApiError(409, 'A club with this URL slug already exists', 'DUPLICATE_SLUG');
   }
 
   static duplicateTeamName() {
-    return new ApiError(409, 'A team with this name already exists in the league', 'DUPLICATE_TEAM_NAME');
+    return new ApiError(409, 'A team with this name already exists in the club', 'DUPLICATE_TEAM_NAME');
   }
 
   static matchAlreadyLive() {
@@ -185,7 +185,7 @@ class ApiError extends Error {
   }
 
   static teamsFull(max) {
-    return new ApiError(422, `This league already has the maximum number of teams (${max})`, 'TEAMS_FULL');
+    return new ApiError(422, `This club already has the maximum number of teams (${max})`, 'TEAMS_FULL');
   }
 
   static rosterFull(max) {

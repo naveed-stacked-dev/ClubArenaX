@@ -1,31 +1,31 @@
 const adminService = require('../services/admin.service');
 const authService = require('../services/auth.service'); // for reset password
-const leagueService = require('../services/league.service'); // for create league
+const clubService = require('../services/club.service'); // for create club
 const ApiResponse = require('../utils/ApiResponse');
 const { buildPaginationResponse } = require('../middlewares/pagination.middleware');
 
-const getAllLeagues = async (req, res, next) => {
+const getAllClubs = async (req, res, next) => {
   try {
-    const { leagues, total } = await adminService.getAllLeaguesAdmin(req.pagination);
+    const { clubs, total } = await adminService.getAllClubsAdmin(req.pagination);
     const pagination = buildPaginationResponse(total, req.pagination);
-    res.json(ApiResponse.paginated(leagues, pagination));
+    res.json(ApiResponse.paginated(clubs, pagination));
   } catch (error) {
     next(error);
   }
 };
 
-const createLeague = async (req, res, next) => {
+const createClub = async (req, res, next) => {
   try {
-    const league = await leagueService.createLeague(req.body, req.user._id);
-    res.status(201).json(ApiResponse.created(league));
+    const club = await clubService.createClub(req.body, req.user._id);
+    res.status(201).json(ApiResponse.created(club));
   } catch (error) {
     next(error);
   }
 };
 
-const resetLeaguePassword = async (req, res, next) => {
+const resetClubPassword = async (req, res, next) => {
   try {
-    // req.params.id is the league ID, but we usually reset for a specific manager
+    // req.params.id is the club ID, but we usually reset for a specific manager
     // assuming body contains managerId and newPassword
     const { managerId, newPassword } = req.body;
     await authService.resetClubManagerPassword(managerId, newPassword);
@@ -35,18 +35,18 @@ const resetLeaguePassword = async (req, res, next) => {
   }
 };
 
-const createLeagueManager = async (req, res, next) => {
+const createClubManager = async (req, res, next) => {
   try {
-    const result = await adminService.createLeagueManager(req.params.id, req.body);
-    res.json(ApiResponse.ok(result, 'Manager created and assigned to league successfully'));
+    const result = await adminService.createClubManager(req.params.id, req.body);
+    res.json(ApiResponse.ok(result, 'Manager created and assigned to club successfully'));
   } catch (error) {
     next(error);
   }
 };
 
-const updateLeagueManager = async (req, res, next) => {
+const updateClubManager = async (req, res, next) => {
   try {
-    const result = await adminService.updateLeagueManager(req.params.managerId, req.body);
+    const result = await adminService.updateClubManager(req.params.managerId, req.body);
     res.json(ApiResponse.ok(result, 'Manager details updated successfully'));
   } catch (error) {
     next(error);
@@ -54,9 +54,9 @@ const updateLeagueManager = async (req, res, next) => {
 };
 
 module.exports = {
-  getAllLeagues,
-  createLeague,
-  resetLeaguePassword,
-  createLeagueManager,
-  updateLeagueManager,
+  getAllClubs,
+  createClub,
+  resetClubPassword,
+  createClubManager,
+  updateClubManager,
 };

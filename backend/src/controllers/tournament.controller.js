@@ -11,10 +11,20 @@ const create = async (req, res, next) => {
   }
 };
 
-const getByLeague = async (req, res, next) => {
+const getAll = async (req, res, next) => {
   try {
-    const { tournaments, total } = await tournamentService.getTournamentsByLeague(
-      req.params.leagueId,
+    const { tournaments, total } = await tournamentService.getAllTournaments(req.pagination);
+    const pagination = buildPaginationResponse(total, req.pagination);
+    res.json(ApiResponse.paginated(tournaments, pagination));
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getByClub = async (req, res, next) => {
+  try {
+    const { tournaments, total } = await tournamentService.getTournamentsByClub(
+      req.params.clubId,
       req.pagination
     );
     const pagination = buildPaginationResponse(total, req.pagination);
@@ -60,4 +70,28 @@ const update = async (req, res, next) => {
   }
 };
 
-module.exports = { create, getByLeague, getById, generateFixtures, getPointsTable, update };
+/**
+ * Get the full bracket tree for a knockout tournament.
+ */
+const getBracket = async (req, res, next) => {
+  try {
+    const bracket = await tournamentService.getBracket(req.params.id);
+    res.json(ApiResponse.ok(bracket));
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Submit a match result and propagate winner through the bracket.
+ */
+const submitResult = async (req, res, next) => {
+  try {
+    const match = await tournamentService.submitMatchResult(req.params.matchId, req.body);
+    res.json(ApiResponse.ok(match, 'Result submitted and bracket updated'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { create, getAll, getByClub, getById, generateFixtures, getPointsTable, update, getBracket, submitResult };

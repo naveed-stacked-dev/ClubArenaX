@@ -5,7 +5,7 @@ const Match = require('../models/Match');
 const ApiError = require('../utils/ApiError');
 
 /**
- * Create a player within a league/team.
+ * Create a player within a club/team.
  */
 const createPlayer = async (data) => {
   const player = await Player.create(data);
@@ -13,17 +13,17 @@ const createPlayer = async (data) => {
   // Initialize stats cache
   await PlayerStatsCache.create({
     playerId: player._id,
-    leagueId: data.leagueId,
+    clubId: data.clubId,
   });
 
   return player;
 };
 
 /**
- * Get all players in a league with pagination, optional team filter.
+ * Get all players in a club with pagination, optional team filter.
  */
-const getPlayersByLeague = async (leagueId, { skip, limit }, teamId = null) => {
-  const filter = { leagueId };
+const getPlayersByClub = async (clubId, { skip, limit }, teamId = null) => {
+  const filter = { clubId };
   if (teamId) filter.teamId = teamId;
 
   const [players, total] = await Promise.all([
@@ -44,7 +44,7 @@ const getPlayersByLeague = async (leagueId, { skip, limit }, teamId = null) => {
 const getPlayerById = async (id) => {
   const player = await Player.findById(id)
     .populate('teamId', 'name logo')
-    .populate('leagueId', 'name slug');
+    .populate('clubId', 'name slug');
   if (!player) throw ApiError.notFound('Player not found');
 
   const stats = await PlayerStatsCache.findOne({ playerId: id });
@@ -103,7 +103,7 @@ const getPlayerRecentMatches = async (playerId, limit = 5) => {
 
 module.exports = {
   createPlayer,
-  getPlayersByLeague,
+  getPlayersByClub,
   getPlayerById,
   updatePlayer,
   deletePlayer,

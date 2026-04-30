@@ -8,8 +8,8 @@ const { handleUpload } = require('../middlewares/upload.middleware');
 router.use(authenticate);
 
 // Club images (clubManager or superAdmin)
-router.post('/club-logo/:leagueId', clubManagerOnly, handleUpload, uploadController.uploadClubLogo);
-router.post('/club-banner/:leagueId', clubManagerOnly, handleUpload, uploadController.uploadClubBanner);
+router.post('/club-logo/:clubId', clubManagerOnly, handleUpload, uploadController.uploadClubLogo);
+router.post('/club-banner/:clubId', clubManagerOnly, handleUpload, uploadController.uploadClubBanner);
 
 // Team images
 router.post('/team-logo/:teamId', clubManagerOnly, handleUpload, uploadController.uploadTeamLogo);

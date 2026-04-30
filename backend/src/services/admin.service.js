@@ -1,55 +1,55 @@
-const League = require('../models/League');
+const Club = require('../models/Club');
 const ClubManager = require('../models/ClubManager');
 const ApiError = require('../utils/ApiError');
 
-const getAllLeaguesAdmin = async ({ skip, limit }) => {
-  const [leagues, total] = await Promise.all([
-    League.find()
+const getAllClubsAdmin = async ({ skip, limit }) => {
+  const [clubs, total] = await Promise.all([
+    Club.find()
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .populate('createdBy', 'name email')
       .lean(),
-    League.countDocuments(),
+    Club.countDocuments(),
   ]);
 
-  const leagueIds = leagues.map((l) => l._id);
-  const managers = await ClubManager.find({ leagueId: { $in: leagueIds } }).lean();
+  const clubIds = clubs.map((c) => c._id);
+  const managers = await ClubManager.find({ clubId: { $in: clubIds } }).lean();
 
-  const leaguesWithManagers = leagues.map((league) => {
+  const clubsWithManagers = clubs.map((club) => {
     const manager = managers.find(
-      (m) => m.leagueId.toString() === league._id.toString()
+      (m) => m.clubId.toString() === club._id.toString()
     );
     return {
-      ...league,
+      ...club,
       manager: manager
         ? { _id: manager._id, name: manager.name, email: manager.email }
         : null,
     };
   });
 
-  return { leagues: leaguesWithManagers, total };
+  return { clubs: clubsWithManagers, total };
 };
 
-const createLeagueManager = async (leagueId, managerData) => {
-  const league = await League.findById(leagueId);
-  if (!league) throw ApiError.notFound('League not found');
+const createClubManager = async (clubId, managerData) => {
+  const club = await Club.findById(clubId);
+  if (!club) throw ApiError.notFound('Club not found');
 
-  const existingManager = await ClubManager.findOne({ leagueId });
-  if (existingManager) throw ApiError.conflict('League already has a manager');
+  const existingManager = await ClubManager.findOne({ clubId });
+  if (existingManager) throw ApiError.conflict('Club already has a manager');
 
   const emailExists = await ClubManager.findOne({ email: managerData.email });
   if (emailExists) throw ApiError.conflict('Email already in use by another manager');
 
   const manager = await ClubManager.create({
     ...managerData,
-    leagueId,
+    clubId,
   });
 
   return manager;
 };
 
-const updateLeagueManager = async (managerId, managerData) => {
+const updateClubManager = async (managerId, managerData) => {
   const manager = await ClubManager.findById(managerId);
   if (!manager) throw ApiError.notFound('Club Manager not found');
 
@@ -68,12 +68,12 @@ const updateLeagueManager = async (managerId, managerData) => {
     _id: manager._id,
     name: manager.name,
     email: manager.email,
-    leagueId: manager.leagueId,
+    clubId: manager.clubId,
   };
 };
 
 module.exports = {
-  getAllLeaguesAdmin,
-  createLeagueManager,
-  updateLeagueManager,
+  getAllClubsAdmin,
+  createClubManager,
+  updateClubManager,
 };

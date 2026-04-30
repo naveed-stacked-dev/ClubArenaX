@@ -10,8 +10,8 @@ const createTeamSchema = Joi.object({
   logo: Joi.string().uri().allow(null, '').optional(),
   color: Joi.string().pattern(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/).optional()
     .messages({ 'string.pattern.base': 'Color must be a valid hex color' }),
-  leagueId: objectId.required()
-    .messages({ 'any.required': 'League ID is required' }),
+  clubId: objectId.required()
+    .messages({ 'any.required': 'Club ID is required' }),
   captain: objectId.optional(),
 });
 

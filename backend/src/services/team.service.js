@@ -3,24 +3,24 @@ const Player = require('../models/Player');
 const ApiError = require('../utils/ApiError');
 
 /**
- * Create a team within a league.
+ * Create a team within a club.
  */
 const createTeam = async (data) => {
-  const existing = await Team.findOne({ leagueId: data.leagueId, name: data.name });
+  const existing = await Team.findOne({ clubId: data.clubId, name: data.name });
   if (existing) {
-    throw ApiError.conflict('A team with this name already exists in the league');
+    throw ApiError.conflict('A team with this name already exists in the club');
   }
   const team = await Team.create(data);
   return team;
 };
 
 /**
- * Get all teams in a league with pagination.
+ * Get all teams in a club with pagination.
  */
-const getTeamsByLeague = async (leagueId, { skip, limit }) => {
+const getTeamsByClub = async (clubId, { skip, limit }) => {
   const [teams, total] = await Promise.all([
-    Team.find({ leagueId }).sort({ name: 1 }).skip(skip).limit(limit),
-    Team.countDocuments({ leagueId }),
+    Team.find({ clubId }).sort({ name: 1 }).skip(skip).limit(limit),
+    Team.countDocuments({ clubId }),
   ]);
   return { teams, total };
 };
@@ -29,7 +29,7 @@ const getTeamsByLeague = async (leagueId, { skip, limit }) => {
  * Get a single team by ID.
  */
 const getTeamById = async (id) => {
-  const team = await Team.findById(id).populate('leagueId', 'name slug');
+  const team = await Team.findById(id).populate('clubId', 'name slug');
   if (!team) throw ApiError.notFound('Team not found');
   return team;
 };
@@ -65,8 +65,8 @@ const addPlayerToTeam = async (teamId, playerId) => {
   const player = await Player.findById(playerId);
   if (!player) throw ApiError.notFound('Player not found');
 
-  if (player.leagueId.toString() !== team.leagueId.toString()) {
-    throw ApiError.badRequest('Player and team must belong to the same league');
+  if (player.clubId.toString() !== team.clubId.toString()) {
+    throw ApiError.badRequest('Player and team must belong to the same club');
   }
 
   if (player.teamId && player.teamId.toString() === teamId.toString()) {
@@ -81,7 +81,7 @@ const addPlayerToTeam = async (teamId, playerId) => {
 
 module.exports = {
   createTeam,
-  getTeamsByLeague,
+  getTeamsByClub,
   getTeamById,
   updateTeam,
   deleteTeam,

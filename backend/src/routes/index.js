@@ -1,7 +1,7 @@
 const router = require('express').Router();
 
 const authRoutes = require('./auth.routes');
-const leagueRoutes = require('./league.routes');
+const clubRoutes = require('./club.routes');
 const teamRoutes = require('./team.routes');
 const playerRoutes = require('./player.routes');
 const tournamentRoutes = require('./tournament.routes');
@@ -17,7 +17,7 @@ const pointsTableRoutes = require('./pointsTable.routes');
 const uploadRoutes = require('./upload.routes');
 
 router.use('/auth', authRoutes);
-router.use('/leagues', leagueRoutes);
+router.use('/clubs', clubRoutes);
 router.use('/teams', teamRoutes);
 router.use('/players', playerRoutes);
 router.use('/tournaments', tournamentRoutes);
@@ -36,7 +36,7 @@ router.use('/upload', uploadRoutes);
 router.get('/health', (req, res) => {
   res.json({
     success: true,
-    message: 'Cricket League API is running',
+    message: 'Club Arena X API is running',
     timestamp: new Date().toISOString(),
   });
 });
