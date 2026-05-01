@@ -35,6 +35,8 @@ const authService = {
     apiClient.post("/auth/refresh-token", { refreshToken }),
   changePassword: (data) =>
     apiClient.post("/auth/change-password", data),
+  updateProfile: (data) =>
+    apiClient.put("/auth/update-profile", data),
 };
 
 export default authService;

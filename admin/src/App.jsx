@@ -15,19 +15,25 @@ import MatchesPage from "@/pages/MatchesPage";
 import MatchSchedulingPage from "@/pages/MatchSchedulingPage";
 import LiveScoringPage from "@/pages/LiveScoringPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
-import SettingsPage from "@/pages/SettingsPage";
+import ClubDetailsPage from "@/pages/ClubDetailsPage";
 import ClubSettingsPage from "@/pages/ClubSettingsPage";
+import ProfilePage from "@/pages/ProfilePage";
 
-const ALL_ADMIN_ROLES = ["superAdmin", "clubManager", "matchManager"];
-const MANAGER_ROLES = ["superAdmin", "clubManager"];
-const SCORER_ROLES = ["superAdmin", "clubManager", "matchManager"];
+const ALL_ADMIN_ROLES = ["superAdmin", "superadmin", "clubManager", "club_manager", "matchManager", "match_manager"];
+const MANAGER_ROLES = ["superAdmin", "superadmin", "clubManager", "club_manager"];
+const SCORER_ROLES = ["superAdmin", "superadmin", "clubManager", "club_manager", "matchManager", "match_manager"];
 
 /**
  * Role-based dashboard switcher — renders the appropriate dashboard
  * based on the authenticated user's role.
  */
 function RoleDashboard() {
-  const { isSuperAdmin } = useAppContext();
+  const { isSuperAdmin, user } = useAppContext();
+  
+  if (user?.role === "matchManager" || user?.role === "match-manager") {
+    return <Navigate to="/scoring" replace />;
+  }
+
   return isSuperAdmin ? <SuperAdminDashboard /> : <ClubManagerDashboard />;
 }
 
@@ -55,7 +61,10 @@ export default function App() {
 
         {/* SuperAdmin-only: Clubs management */}
         <Route path="clubs" element={
-          <ProtectedRoute allowedRoles={["superAdmin"]}><ClubsPage /></ProtectedRoute>
+          <ProtectedRoute allowedRoles={["superAdmin", "superadmin"]}><ClubsPage /></ProtectedRoute>
+        } />
+        <Route path="clubs/:clubId" element={
+          <ProtectedRoute allowedRoles={["superAdmin", "superadmin"]}><ClubDetailsPage /></ProtectedRoute>
         } />
 
         {/* ClubManager + SuperAdmin */}
@@ -86,15 +95,13 @@ export default function App() {
           <ProtectedRoute allowedRoles={SCORER_ROLES}><LiveScoringPage /></ProtectedRoute>
         } />
 
-        {/* Settings */}
-        <Route path="settings" element={
-          <ProtectedRoute allowedRoles={["superAdmin"]}><SettingsPage /></ProtectedRoute>
-        } />
-
         {/* Club Settings (ClubManager) */}
         <Route path="club-settings" element={
           <ProtectedRoute allowedRoles={["clubManager"]}><ClubSettingsPage /></ProtectedRoute>
         } />
+        
+        {/* Profile */}
+        <Route path="profile" element={<ProfilePage />} />
       </Route>
 
       {/* Catch-all */}

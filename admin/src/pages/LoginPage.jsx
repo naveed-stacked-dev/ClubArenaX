@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAppContext } from "@/hooks/useAppContext";
 import { useDynamicHead } from "@/hooks/useDynamicHead";
@@ -20,16 +20,16 @@ const ROLES = [
 export default function LoginPage() {
   useDynamicHead();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
   const { login } = useAppContext();
   const [role, setRole] = useState("superadmin");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
 
   const activeRole = ROLES.find((r) => r.key === role);
-  const isPhoneLogin = role === "match-manager";
 
   const clearFieldError = (field) => {
     if (fieldErrors[field]) setFieldErrors((prev) => ({ ...prev, [field]: null }));
@@ -40,9 +40,10 @@ export default function LoginPage() {
     setFieldErrors({});
     setIsLoading(true);
     try {
-      const credentials = isPhoneLogin
-        ? { phone, password }
-        : { email, password };
+      const credentials = { email, password };
+      if (role === "match-manager" && token) {
+        credentials.token = token;
+      }
       await login(role, credentials);
       toast.success(`Welcome back!`);
       navigate("/");
@@ -125,45 +126,24 @@ export default function LoginPage() {
 
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
-              {isPhoneLogin ? (
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="Enter phone number"
-                    value={phone}
-                    onChange={(e) => { setPhone(e.target.value); clearFieldError("phone"); }}
-                    required
-                    autoComplete="tel"
-                    className={fieldErrors.phone ? "border-destructive" : ""}
-                  />
-                  {fieldErrors.phone && (
-                    <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-                      <AlertCircle className="w-3 h-3" /> {fieldErrors.phone}
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => { setEmail(e.target.value); clearFieldError("email"); }}
-                    required
-                    autoComplete="email"
-                    className={fieldErrors.email ? "border-destructive" : ""}
-                  />
-                  {fieldErrors.email && (
-                    <p className="text-xs text-destructive flex items-center gap-1 mt-1">
-                      <AlertCircle className="w-3 h-3" /> {fieldErrors.email}
-                    </p>
-                  )}
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); clearFieldError("email"); }}
+                  required
+                  autoComplete="email"
+                  className={fieldErrors.email ? "border-destructive" : ""}
+                />
+                {fieldErrors.email && (
+                  <p className="text-xs text-destructive flex items-center gap-1 mt-1">
+                    <AlertCircle className="w-3 h-3" /> {fieldErrors.email}
+                  </p>
+                )}
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>

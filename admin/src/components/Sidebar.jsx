@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 
 const NAV_ITEMS = [
-  { path: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["superAdmin", "clubManager", "matchManager"] },
+  { path: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["superAdmin", "clubManager"] },
   { path: "/clubs", label: "Clubs", icon: Trophy, roles: ["superAdmin"] },
   { path: "/tournaments", label: "Tournaments", icon: Swords, roles: ["superAdmin", "clubManager"] },
   { path: "/teams", label: "Teams", icon: Users, roles: ["superAdmin", "clubManager"] },
@@ -29,7 +29,6 @@ const NAV_ITEMS = [
   { path: "/match-scheduling", label: "Match Scheduling", icon: GitBranch, roles: ["superAdmin", "clubManager"] },
   { path: "/scoring", label: "Live Scoring", icon: Radio, roles: ["clubManager", "matchManager"] },
   { path: "/analytics", label: "Analytics", icon: BarChart3, roles: ["superAdmin", "clubManager"] },
-  { path: "/settings", label: "Settings", icon: Settings, roles: ["superAdmin"] },
   { path: "/club-settings", label: "Club Settings", icon: Palette, roles: ["clubManager"] },
 ];
 

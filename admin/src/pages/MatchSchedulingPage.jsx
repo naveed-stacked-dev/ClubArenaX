@@ -28,6 +28,7 @@ import ProgressionView from "@/components/bracket/ProgressionView";
 import BracketBuilder from "@/components/bracket/BracketBuilder";
 import MatchDetailDialog from "@/components/bracket/MatchDetailDialog";
 import LeagueDashboard from "@/components/league/LeagueDashboard";
+import LeagueTimeline from "@/components/league/LeagueTimeline";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
@@ -114,8 +115,9 @@ export default function MatchSchedulingPage() {
         matchService.getByTournament(selectedTournament),
         tournamentService.getById(selectedTournament),
       ]);
-      const mData = mRes.status === "fulfilled"
+      let mData = mRes.status === "fulfilled"
         ? (mRes.value.data?.data || mRes.value.data?.matches || mRes.value.data || []) : [];
+
       setMatches(Array.isArray(mData) ? mData : []);
 
       const tData = tRes.status === "fulfilled" ? (tRes.value.data?.data || tRes.value.data) : null;
@@ -199,8 +201,8 @@ export default function MatchSchedulingPage() {
   const handleScheduleFromDialog = async (matchId, data) => {
     setSubmitting(true);
     try {
-      await matchService.schedule(matchId, { startTime: data.startTime, venue: data.venue });
-      toast.success("Match scheduled");
+      await matchService.schedule(matchId, { startTime: data.startTime, venue: data.venue, action: data.action, reason: data.reason });
+      toast.success(data.action ? `Match ${data.action}d successfully` : "Match scheduled");
       setShowMatchDetail(false);
       fetchMatchData();
     } catch { /* interceptor */ } finally { setSubmitting(false); }
@@ -224,7 +226,9 @@ export default function MatchSchedulingPage() {
     return tA.toLowerCase().includes(s) || tB.toLowerCase().includes(s);
   });
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (m) => {
+    let status = m.status;
+
     const map = {
       live: <Badge className="bg-red-500/20 text-red-400 border-red-500/30 animate-pulse">LIVE</Badge>,
       completed: <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Completed</Badge>,
@@ -310,6 +314,9 @@ export default function MatchSchedulingPage() {
                   <TabsTrigger value="progression" className="flex items-center gap-1.5 data-[state=active]:bg-pink-500/20 data-[state=active]:text-pink-400">
                     <Activity className="w-3.5 h-3.5" /> Progression
                   </TabsTrigger>
+                  <TabsTrigger value="knockout-timeline" className="flex items-center gap-1.5 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400">
+                    <Clock className="w-3.5 h-3.5" /> Timeline
+                  </TabsTrigger>
                 </>
               )}
               {isLeague && (
@@ -378,7 +385,7 @@ export default function MatchSchedulingPage() {
                               <TableCell className="text-sm">{dt ? dt.toLocaleTimeString("en", { hour: "2-digit", minute: "2-digit" }) : "TBD"}</TableCell>
                               <TableCell className="text-sm">{m.venue || "TBD"}</TableCell>
                               <TableCell className="text-sm font-medium text-emerald-400">{winnerName}</TableCell>
-                              <TableCell>{getStatusBadge(m.status)}</TableCell>
+                              <TableCell>{getStatusBadge(m)}</TableCell>
                               <TableCell>
                                 <DropdownMenu>
                                   <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="w-4 h-4" /></Button></DropdownMenuTrigger>
@@ -458,6 +465,13 @@ export default function MatchSchedulingPage() {
                     )}
                   </CardContent>
                 </Card>
+              </TabsContent>
+            )}
+
+            {/* Tab 5: Knockout Timeline */}
+            {isKnockout && (
+              <TabsContent value="knockout-timeline">
+                <LeagueTimeline matches={matches} />
               </TabsContent>
             )}
 

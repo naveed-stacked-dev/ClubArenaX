@@ -1,5 +1,5 @@
 import { useAppContext } from "@/hooks/useAppContext";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,7 @@ function getPageTitle(pathname) {
     "/matches": "Matches",
     "/analytics": "Analytics",
     "/settings": "Settings",
+    "/profile": "Profile",
   };
   if (pathname.startsWith("/scoring")) return "Live Scoring";
   return map[pathname] || "Dashboard";
@@ -104,9 +105,11 @@ export default function Header() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
-              Profile
+            <DropdownMenuItem asChild>
+              <Link to="/profile" className="cursor-pointer w-full flex items-center">
+                <User className="mr-2 h-4 w-4" />
+                Profile
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="text-destructive focus:text-destructive">

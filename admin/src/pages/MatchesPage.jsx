@@ -5,6 +5,7 @@ import matchService from "@/services/matchService";
 import tournamentService from "@/services/tournamentService";
 import teamService from "@/services/teamService";
 import clubService from "@/services/clubService";
+import authService from "@/services/authService";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,8 +44,8 @@ export default function MatchesPage() {
   const [selected, setSelected] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const [form, setForm] = useState({ teamA: "", teamB: "", tournament: "", venue: "", date: "", overs: "20" });
-  const [assignForm, setAssignForm] = useState({ phone: "", password: "", name: "" });
+  const [form, setForm] = useState({ teamA: "", teamB: "", tournament: "", venue: "", startTime: "", overs: "20" });
+  const [assignForm, setAssignForm] = useState({ email: "", password: "", name: "" });
   const [streamForm, setStreamForm] = useState({ streamUrl: "" });
   const [scorerLink, setScorerLink] = useState("");
 
@@ -105,14 +106,22 @@ export default function MatchesPage() {
   };
 
   const handleAssignManager = async () => {
-    if (!assignForm.phone.trim()) return toast.error("Manager phone required");
+    if (!assignForm.email.trim()) return toast.error("Manager email required");
     setSubmitting(true);
     try {
-      await matchService.assignManager(selected._id || selected.id, assignForm);
+      await authService.createMatchManager({
+        matchId: selected._id || selected.id,
+        clubId: selectedClub,
+        name: assignForm.name,
+        email: assignForm.email,
+        password: assignForm.password,
+      });
       toast.success("Match Manager assigned");
       setShowAssign(false);
       fetchData();
-    } catch { /* interceptor */ } finally { setSubmitting(false); }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to assign scorer");
+    } finally { setSubmitting(false); }
   };
 
   const handleUpdateStream = async () => {
@@ -137,7 +146,7 @@ export default function MatchesPage() {
     } catch { /* interceptor */ }
   };
 
-  const openAssign = (m) => { setSelected(m); setAssignForm({ phone: "", password: "", name: "" }); setShowAssign(true); };
+  const openAssign = (m) => { setSelected(m); setAssignForm({ email: "", password: "", name: "" }); setShowAssign(true); };
   const openStream = (m) => { setSelected(m); setStreamForm({ streamUrl: m.streamUrl || "" }); setShowStream(true); };
 
   const filtered = matches.filter((m) => {
@@ -147,10 +156,14 @@ export default function MatchesPage() {
     return tA.toLowerCase().includes(s) || tB.toLowerCase().includes(s);
   });
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (m) => {
+    let status = m.status;
+
     if (status === "live") return <Badge variant="destructive" className="animate-pulse">LIVE</Badge>;
     if (status === "completed") return <Badge variant="success">Completed</Badge>;
-    return <Badge variant="secondary">Scheduled</Badge>;
+    if (status === "upcoming") return <Badge className="bg-indigo-500/20 text-indigo-400 border-indigo-500/30">Upcoming</Badge>;
+    if (status === "unscheduled") return <Badge variant="outline" className="text-muted-foreground">Unscheduled</Badge>;
+    return <Badge variant="secondary">{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>;
   };
 
   return (
@@ -160,9 +173,9 @@ export default function MatchesPage() {
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Calendar className="w-6 h-6 text-indigo-500" /> Matches</h1>
           <p className="text-sm text-muted-foreground mt-1">Schedule matches and assign scorers</p>
         </div>
-        <Button onClick={() => { setForm({ teamA: "", teamB: "", tournament: selectedTournament === "all" ? "" : selectedTournament, venue: "", date: "", overs: "20" }); setShowCreate(true); }} disabled={!selectedClub} className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-90">
+        {/* <Button onClick={() => { setForm({ teamA: "", teamB: "", tournament: selectedTournament === "all" ? "" : selectedTournament, venue: "", startTime: "", overs: "20" }); setShowCreate(true); }} disabled={!selectedClub} className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-90">
           <Plus className="w-4 h-4 mr-2" /> Schedule Match
-        </Button>
+        </Button> */}
       </motion.div>
 
       <motion.div variants={item} className="flex flex-col sm:flex-row gap-3">
@@ -199,7 +212,7 @@ export default function MatchesPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Match</TableHead>
-                    <TableHead>Tournament</TableHead>
+                    <TableHead>Match Manager</TableHead>
                     <TableHead>Date / Venue</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="w-12"></TableHead>
@@ -214,14 +227,24 @@ export default function MatchesPage() {
                           <span className="text-xs text-muted-foreground">{m.overs} Overs Match</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm">{m.tournament?.name || "—"}</TableCell>
+                      <TableCell className="text-sm">
+                        {m.assignedManager?.name ? (
+                          <div className="flex flex-col">
+                            <span className="font-medium">{m.assignedManager.name}</span>
+                            <span className="text-xs text-muted-foreground">{m.assignedManager.email}</span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <div className="flex flex-col gap-1">
-                          <span className="text-sm">{m.date ? new Date(m.date).toLocaleDateString() : "TBD"}</span>
+                          <span className="text-sm">{m.startTime ? new Date(m.startTime).toLocaleDateString() : "TBD"}</span>
                           <span className="text-xs text-muted-foreground">{m.venue || "TBD"}</span>
+                          {m.rescheduleAction && <span className="text-[10px] text-amber-500 font-medium uppercase tracking-wider">{m.rescheduleAction}</span>}
                         </div>
                       </TableCell>
-                      <TableCell>{getStatusBadge(m.status)}</TableCell>
+                      <TableCell>{getStatusBadge(m)}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="w-4 h-4" /></Button></DropdownMenuTrigger>
@@ -275,7 +298,7 @@ export default function MatchesPage() {
               </Select>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2"><Label>Date & Time</Label><Input type="datetime-local" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+              <div className="space-y-2"><Label>Date & Time</Label><Input type="datetime-local" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} /></div>
               <div className="space-y-2"><Label>Overs</Label><Input type="number" value={form.overs} onChange={(e) => setForm({ ...form, overs: e.target.value })} /></div>
             </div>
             <div className="space-y-2"><Label>Venue</Label><Input placeholder="Stadium Name" value={form.venue} onChange={(e) => setForm({ ...form, venue: e.target.value })} /></div>
@@ -293,7 +316,7 @@ export default function MatchesPage() {
           <DialogHeader><DialogTitle>Assign Match Manager</DialogTitle><DialogDescription>Create a dedicated scorer account for this match.</DialogDescription></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2"><Label>Name</Label><Input placeholder="Scorer Name" value={assignForm.name} onChange={(e) => setAssignForm({ ...assignForm, name: e.target.value })} /></div>
-            <div className="space-y-2"><Label>Phone</Label><Input placeholder="+91..." value={assignForm.phone} onChange={(e) => setAssignForm({ ...assignForm, phone: e.target.value })} /></div>
+            <div className="space-y-2"><Label>Email</Label><Input type="email" placeholder="scorer@example.com" value={assignForm.email} onChange={(e) => setAssignForm({ ...assignForm, email: e.target.value })} /></div>
             <div className="space-y-2"><Label>Password</Label><PasswordInput value={assignForm.password} onChange={(e) => setAssignForm({ ...assignForm, password: e.target.value })} /></div>
           </div>
           <DialogFooter>

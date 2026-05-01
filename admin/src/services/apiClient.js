@@ -37,9 +37,13 @@ apiClient.interceptors.response.use(
       localStorage.removeItem("admin_user");
       if (!window.location.pathname.includes("/login")) {
         window.location.href = "/login";
+        // Don't toast on 401 — the redirect handles it
+        return Promise.reject(error);
+      } else {
+        // If they are already on the login page, show the error toast
+        toast.error(message || "Invalid credentials. Please try again.");
+        return Promise.reject(error);
       }
-      // Don't toast on 401 — the redirect handles it
-      return Promise.reject(error);
     }
 
     // ── Validation errors with an errors[] array ──

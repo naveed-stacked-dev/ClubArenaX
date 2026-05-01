@@ -16,27 +16,22 @@ export function AppProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(() => localStorage.getItem("admin_token"));
   const [loading, setLoading] = useState(true);
-  const [darkMode, setDarkMode] = useState(() => {
-    const stored = localStorage.getItem("admin_dark_mode");
-    return stored ? stored === "true" : true; // Default dark
-  });
+  const [darkMode, setDarkMode] = useState(false);
 
   // ─── Multi-tenant state ───
   const [clubId, setClubId] = useState(null);
   const [themeColor, setThemeColor] = useState("#7c3aed");
+  const [clubTheme, setClubTheme] = useState({ primaryColor: "#1a73e8", secondaryColor: "#ffffff" });
   const [clubName, setClubName] = useState(null);
   const [clubLogo, setClubLogo] = useState(null);
   const [clubBanner, setClubBanner] = useState(null);
 
-  // ─── Dark mode toggle ───
+  // Disable dark mode
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", darkMode);
-    localStorage.setItem("admin_dark_mode", String(darkMode));
-  }, [darkMode]);
-
-  const toggleDarkMode = useCallback(() => {
-    setDarkMode((prev) => !prev);
+    document.documentElement.classList.remove("dark");
   }, []);
+
+  const toggleDarkMode = useCallback(() => {}, []);
 
   // ─── Fetch club data for ClubManagers ───
   const loadClubData = useCallback(async (userClubId) => {
@@ -49,6 +44,7 @@ export function AppProvider({ children }) {
         setClubName(club.name || null);
         setClubLogo(club.logo || null);
         setClubBanner(club.bannerUrl || null);
+        setClubTheme(club.theme || { primaryColor: "#1a73e8", secondaryColor: "#ffffff" });
         const color = club.themeColor || "#7c3aed";
         setThemeColor(color);
         applyThemeColor(color);
@@ -99,6 +95,7 @@ export function AppProvider({ children }) {
     setUser(null);
     setClubId(null);
     setThemeColor("#7c3aed");
+    setClubTheme({ primaryColor: "#1a73e8", secondaryColor: "#ffffff" });
     setClubName(null);
     setClubLogo(null);
     setClubBanner(null);
@@ -143,9 +140,15 @@ export function AppProvider({ children }) {
     applyThemeColor(color);
   }, []);
 
+  const updateUser = useCallback((userData) => {
+    setUser(userData);
+    localStorage.setItem("admin_user", JSON.stringify(userData));
+  }, []);
+
   const value = useMemo(
     () => ({
       user,
+      updateUser,
       token,
       loading,
       darkMode,
@@ -162,10 +165,11 @@ export function AppProvider({ children }) {
       clubName,
       clubLogo,
       clubBanner,
+      clubTheme,
       updateThemeColor,
       loadClubData,
     }),
-    [user, token, loading, darkMode, toggleDarkMode, login, logout, isSuperAdmin, isClubManager, isMatchManager, clubId, themeColor, clubName, clubLogo, clubBanner, updateThemeColor, loadClubData]
+    [user, updateUser, token, loading, darkMode, toggleDarkMode, login, logout, isSuperAdmin, isClubManager, isMatchManager, clubId, themeColor, clubTheme, clubName, clubLogo, clubBanner, updateThemeColor, loadClubData]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -23,11 +23,13 @@ const PRESET_COLORS = [
 
 export default function ClubSettingsPage() {
   const {
-    clubId, themeColor, updateThemeColor,
+    clubId, themeColor, clubTheme, updateThemeColor,
     clubName, clubLogo, clubBanner, loadClubData,
   } = useAppContext();
 
   const [color, setColor] = useState(themeColor || "#7c3aed");
+  const [primaryColor, setPrimaryColor] = useState(clubTheme?.primaryColor || "#1a73e8");
+  const [secondaryColor, setSecondaryColor] = useState(clubTheme?.secondaryColor || "#ffffff");
   const [logo, setLogo] = useState(clubLogo);
   const [banner, setBanner] = useState(clubBanner);
   const [savingTheme, setSavingTheme] = useState(false);
@@ -55,6 +57,7 @@ export default function ClubSettingsPage() {
       else if (banner) formData.append("bannerUrl", banner);
 
       await clubService.update(clubId, formData);
+      await clubService.updateTheme(clubId, { primaryColor, secondaryColor });
       toast.success("Settings saved successfully!");
       loadClubData(clubId);
     } catch {
@@ -81,27 +84,43 @@ export default function ClubSettingsPage() {
 
       {/* Live Preview */}
       <motion.div variants={item}>
-        <Card className="overflow-hidden">
+        <Card className="overflow-hidden border-border/50">
           <div
-            className="h-24 relative"
+            className="h-20 relative"
             style={{
-              background: `linear-gradient(135deg, ${color}dd, ${color}88)`,
+              background: `linear-gradient(135deg, ${color}, ${color}dd)`,
             }}
           >
             <div className="absolute inset-0 bg-black/10" />
             <div className="relative flex items-center h-full px-6 gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
                 {logo ? (
-                  <img src={logo} alt="" className="w-8 h-8 rounded-lg object-cover" />
+                  <img src={logo} alt="" className="w-6 h-6 rounded-lg object-cover" />
                 ) : (
-                  <Trophy className="w-6 h-6 text-white" />
+                  <Trophy className="w-5 h-5 text-white" />
                 )}
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white">{clubName || "Your Club"}</h3>
-                <p className="text-white/60 text-xs">Live preview of your branding</p>
+                <h3 className="text-base font-bold text-white">{clubName || "Your Club"}</h3>
+                <p className="text-white/60 text-[10px] uppercase tracking-wider">Live Preview</p>
               </div>
-              <Badge className="ml-auto bg-white/20 text-white backdrop-blur-sm text-xs">Preview</Badge>
+            </div>
+          </div>
+          <div className="p-4 bg-background space-y-3">
+            <div className="flex gap-2">
+              <div className="h-8 flex-1 rounded bg-muted/50 flex items-center justify-center text-[10px] text-muted-foreground font-semibold">CONTENT AREA</div>
+              <div 
+                className="h-8 w-24 rounded shadow-sm flex items-center justify-center text-[10px] font-bold" 
+                style={{ backgroundColor: secondaryColor, color: primaryColor }}
+              >
+                ACCENT
+              </div>
+            </div>
+            <div 
+              className="h-10 w-full rounded shadow-sm flex items-center justify-center text-[10px] text-white font-bold" 
+              style={{ backgroundColor: primaryColor }}
+            >
+              PRIMARY BUTTON
             </div>
           </div>
         </Card>
@@ -112,7 +131,7 @@ export default function ClubSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Palette className="w-4 h-4 text-violet-500" /> Theme Color
+              <Palette className="w-4 h-4 text-violet-500" /> Dashboard Theme Color
             </CardTitle>
             <CardDescription>Choose your club's primary accent color</CardDescription>
           </CardHeader>
@@ -156,7 +175,53 @@ export default function ClubSettingsPage() {
               </div>
             </div>
 
+            <Separator className="my-6" />
+            
+            <div className="space-y-4">
+              <Label className="text-sm font-semibold">Portal Primary Color</Label>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <input
+                    type="color"
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    className="w-14 h-14 rounded-xl border-2 border-border cursor-pointer appearance-none bg-transparent [&::-webkit-color-swatch-wrapper]:p-1 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-0"
+                  />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <Label className="text-xs text-muted-foreground">Hex Value</Label>
+                  <Input
+                    value={primaryColor}
+                    onChange={(e) => setPrimaryColor(e.target.value)}
+                    maxLength={7}
+                    className="font-mono text-sm uppercase"
+                  />
+                </div>
+              </div>
+            </div>
 
+            <div className="space-y-4 pt-4">
+              <Label className="text-sm font-semibold">Portal Secondary Color</Label>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <input
+                    type="color"
+                    value={secondaryColor}
+                    onChange={(e) => setSecondaryColor(e.target.value)}
+                    className="w-14 h-14 rounded-xl border-2 border-border cursor-pointer appearance-none bg-transparent [&::-webkit-color-swatch-wrapper]:p-1 [&::-webkit-color-swatch]:rounded-lg [&::-webkit-color-swatch]:border-0"
+                  />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <Label className="text-xs text-muted-foreground">Hex Value</Label>
+                  <Input
+                    value={secondaryColor}
+                    onChange={(e) => setSecondaryColor(e.target.value)}
+                    maxLength={7}
+                    className="font-mono text-sm uppercase"
+                  />
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </motion.div>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import { useAppContext } from "@/hooks/useAppContext";
 import clubService from "@/services/clubService";
 import authService from "@/services/authService";
@@ -45,12 +46,14 @@ import {
   Search,
   Globe,
   KeyRound,
+  Settings,
 } from "lucide-react";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function ClubsPage() {
+  const navigate = useNavigate();
   const { isSuperAdmin } = useAppContext();
   const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -236,7 +239,8 @@ export default function ClubsPage() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="border-b transition-colors hover:bg-muted/50"
+                        className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
+                        onClick={() => navigate(`/clubs/${club._id || club.id}`)}
                       >
                         <TableCell>
                           <div className="flex items-center gap-3">
@@ -274,13 +278,16 @@ export default function ClubsPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openEdit(club)}>
-                                <Pencil className="w-4 h-4 mr-2" /> Edit
+                              <DropdownMenuItem onClick={() => navigate(`/clubs/${club._id || club.id}`)}>
+                                <Settings className="w-4 h-4 mr-2 text-violet-500" /> Manage Details
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openManager(club)}>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(club); }}>
+                                <Pencil className="w-4 h-4 mr-2" /> Quick Edit
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openManager(club); }}>
                                 <UserPlus className="w-4 h-4 mr-2" /> {club.manager ? "Edit Manager" : "Create Manager"}
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openDelete(club)} className="text-destructive focus:text-destructive">
+                              <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openDelete(club); }} className="text-destructive focus:text-destructive">
                                 <Trash2 className="w-4 h-4 mr-2" /> Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { useAppContext } from "@/hooks/useAppContext";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { io } from "socket.io-client";
@@ -14,10 +15,50 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlayCircle, RotateCcw, AlertTriangle, UserMinus, SkipForward, Ban, Loader2 } from "lucide-react";
+import { PlayCircle, RotateCcw, AlertTriangle, UserMinus, SkipForward, Ban, Loader2, Clock } from "lucide-react";
+
+function CountdownTimer({ startTime, onTimeUp }) {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    if (!startTime) return;
+    
+    let timer;
+    const calculateTimeLeft = () => {
+      const difference = new Date(startTime) - new Date();
+      if (difference <= 0) {
+        if (timer) clearInterval(timer);
+        onTimeUp?.();
+        return "Match is ready to start!";
+      }
+      
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((difference / 1000 / 60) % 60);
+      const seconds = Math.floor((difference / 1000) % 60);
+      
+      return `${days > 0 ? `${days}d ` : ''}${hours}h ${minutes}m ${seconds}s`;
+    };
+
+    setTimeLeft(calculateTimeLeft());
+    timer = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [startTime, onTimeUp]);
+
+  return (
+    <div className="flex items-center gap-3 text-2xl font-mono text-indigo-400 font-bold bg-indigo-500/10 px-6 py-3 rounded-xl border border-indigo-500/20 shadow-inner">
+      <Clock className="w-6 h-6 animate-pulse" />
+      {timeLeft || "Calculating..."}
+    </div>
+  );
+}
 
 export default function LiveScoringPage() {
-  const { matchId } = useParams();
+  const { matchId: routeMatchId } = useParams();
+  const { user } = useAppContext();
+  const matchId = routeMatchId || user?.matchId;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [socket, setSocket] = useState(null);
@@ -69,7 +110,8 @@ export default function LiveScoringPage() {
   const { data: scorecardRaw, isLoading: scoreLoading } = useQuery({
     queryKey: ["scorecard", matchId],
     queryFn: () => scoringService.getScorecard(matchId),
-    enabled: !!matchId && match?.status !== "scheduled",
+    enabled: !!matchId && match?.status !== "unscheduled",
+    retry: false, // Do not retry on 404 (expected if match never started)
   });
   const scorecard = scorecardRaw?.data?.data || scorecardRaw?.data;
 
@@ -83,6 +125,16 @@ export default function LiveScoringPage() {
       queryClient.invalidateQueries(["scorecard", matchId]);
     },
     onError: () => toast.error("Failed to start match"),
+  });
+
+  const resumeMatchMut = useMutation({
+    mutationFn: () => scoringService.resumeMatch(matchId),
+    onSuccess: () => {
+      toast.success("Match Resumed!");
+      queryClient.invalidateQueries(["match", matchId]);
+      queryClient.invalidateQueries(["scorecard", matchId]);
+    },
+    onError: () => toast.error("Failed to resume match"),
   });
 
   const scoreMut = useMutation({
@@ -134,24 +186,78 @@ export default function LiveScoringPage() {
     },
   });
 
+  const [isTimePassed, setIsTimePassed] = useState(false);
+
+  useEffect(() => {
+    if (match?.startTime) {
+      setIsTimePassed(new Date(match.startTime) <= new Date());
+    }
+  }, [match?.startTime]);
 
   if (!matchId) return <div className="p-8 text-center">No match selected</div>;
   if (matchLoading) return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>;
   if (!match) return <div className="p-8 text-center">Match not found</div>;
 
-  // Render Start Screen if scheduled
-  if (match.status === "scheduled") {
+  const handleStartMatchClick = () => {
+    if (!isTimePassed) {
+      toast.error("Match time has not started yet!");
+      return;
+    }
+    setShowStart(true);
+  };
+
+  // Render Start Screen if upcoming
+  if (match.status === "upcoming" || match.status === "unscheduled") {
+    const hasSummary = !!scorecard;
+
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
         <div className="text-center space-y-2">
-          <Badge variant="secondary" className="mb-4">Scheduled</Badge>
+          <Badge variant="secondary" className="mb-4">Upcoming</Badge>
           <h1 className="text-3xl font-bold">{match.teamA?.name} <span className="text-muted-foreground mx-2">vs</span> {match.teamB?.name}</h1>
           <p className="text-muted-foreground">{match.overs} Overs Match • {match.venue || "TBD"}</p>
         </div>
         
-        <Button size="lg" onClick={() => setShowStart(true)} className="bg-red-500 hover:bg-red-600 text-white rounded-full px-8 py-6 text-lg shadow-lg shadow-red-500/25">
-          <PlayCircle className="w-6 h-6 mr-2" /> Start Match Now
-        </Button>
+        {match.rescheduleAction && (
+          <div className="bg-amber-500/10 border border-amber-500/20 text-amber-500 px-6 py-4 rounded-xl max-w-md w-full text-center">
+            <h3 className="font-bold text-lg mb-1 flex items-center justify-center gap-2">
+              <AlertTriangle className="w-5 h-5" /> 
+              Match {match.rescheduleAction.charAt(0).toUpperCase() + match.rescheduleAction.slice(1)}d
+            </h3>
+            {match.rescheduleReason && <p className="text-sm opacity-90">Reason: {match.rescheduleReason}</p>}
+          </div>
+        )}
+
+        {match.startTime && !isTimePassed && (
+          <CountdownTimer 
+            startTime={match.startTime} 
+            onTimeUp={() => {
+              setIsTimePassed(true);
+              queryClient.invalidateQueries(["match", matchId]);
+            }} 
+          />
+        )}
+
+        {hasSummary ? (
+          <Button 
+            size="lg" 
+            onClick={() => resumeMatchMut.mutate()} 
+            disabled={!isTimePassed || resumeMatchMut.isPending} 
+            className={`rounded-full px-8 py-6 text-lg shadow-lg ${isTimePassed ? 'bg-indigo-500 hover:bg-indigo-600 text-white shadow-indigo-500/25' : 'bg-secondary text-muted-foreground cursor-not-allowed'}`}
+          >
+            {resumeMatchMut.isPending ? <Loader2 className="w-6 h-6 mr-2 animate-spin" /> : <RotateCcw className="w-6 h-6 mr-2" />} 
+            Resume Match
+          </Button>
+        ) : (
+          <Button 
+            size="lg" 
+            onClick={handleStartMatchClick} 
+            disabled={!isTimePassed} 
+            className={`rounded-full px-8 py-6 text-lg shadow-lg ${isTimePassed ? 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/25' : 'bg-secondary text-muted-foreground cursor-not-allowed'}`}
+          >
+            <PlayCircle className="w-6 h-6 mr-2" /> Start Match Now
+          </Button>
+        )}
 
         <Dialog open={showStart} onOpenChange={setShowStart}>
           <DialogContent>
@@ -180,7 +286,7 @@ export default function LiveScoringPage() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowStart(false)}>Cancel</Button>
-              <Button onClick={() => startMatchMut.mutate({ tossWinner, tossDecision })} disabled={startMatchMut.isPending || !tossWinner}>
+              <Button onClick={() => startMatchMut.mutate({ wonBy: tossWinner, decision: tossDecision })} disabled={startMatchMut.isPending || !tossWinner}>
                 {startMatchMut.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Start Match
               </Button>
             </DialogFooter>
@@ -191,9 +297,10 @@ export default function LiveScoringPage() {
   }
 
   // Live Dashboard
-  const currentInnings = scorecard?.innings?.[scorecard.currentInnings - 1] || {};
-  const battingTeam = match.teamA?._id === currentInnings.battingTeam ? match.teamA : match.teamB;
-  const bowlingTeam = match.teamA?._id === currentInnings.bowlingTeam ? match.teamA : match.teamB;
+  const currentInningKey = scorecard?.currentInning === 1 ? 'first' : 'second';
+  const currentInnings = scorecard?.innings?.[currentInningKey] || {};
+  const battingTeam = match.teamA?._id === currentInnings.battingTeamId?._id ? match.teamA : match.teamB;
+  const bowlingTeam = match.teamA?._id === currentInnings.bowlingTeamId?._id ? match.teamA : match.teamB;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">

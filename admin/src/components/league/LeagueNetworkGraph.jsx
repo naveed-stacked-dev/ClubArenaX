@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { ReactFlow, useNodesState, useEdgesState, Background, Controls } from "@xyflow/react";
+import { ReactFlow, useNodesState, useEdgesState, Background, Controls, Handle, Position } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { motion } from "framer-motion";
 import { Network } from "lucide-react";
@@ -11,6 +11,8 @@ const TeamNode = ({ data }) => {
   return (
     <div className={`relative flex flex-col items-center justify-center p-2 rounded-full border-2 bg-card/80 backdrop-blur-md transition-all duration-300 ${isActive ? 'scale-110 border-indigo-500 shadow-[0_0_15px_rgba(99,102,241,0.5)] z-10' : 'border-border opacity-70 scale-90'}`}
          style={{ width: 80, height: 80 }}>
+      <Handle type="target" position={Position.Top} className="opacity-0" />
+      <Handle type="source" position={Position.Bottom} className="opacity-0" />
       <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shadow-sm ring-1 ring-white/10 mb-1"
            style={{ backgroundColor: team?.color || "oklch(0.3 0.02 260)" }}>
         {team?.shortName || team?.name?.substring(0, 3).toUpperCase() || "?"}
