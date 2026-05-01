@@ -94,4 +94,28 @@ const submitResult = async (req, res, next) => {
   }
 };
 
-module.exports = { create, getAll, getByClub, getById, generateFixtures, getPointsTable, update, getBracket, submitResult };
+/**
+ * Get the bracket graph for the visual builder.
+ */
+const getBracketGraph = async (req, res, next) => {
+  try {
+    const graph = await tournamentService.getBracketGraph(req.params.id);
+    res.json(ApiResponse.ok(graph));
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Save the bracket graph from the visual builder.
+ */
+const saveBracketGraph = async (req, res, next) => {
+  try {
+    const graph = await tournamentService.saveBracketGraph(req.params.id, req.body);
+    res.json(ApiResponse.ok(graph, 'Bracket structure saved'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { create, getAll, getByClub, getById, generateFixtures, getPointsTable, update, getBracket, submitResult, getBracketGraph, saveBracketGraph };

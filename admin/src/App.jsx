@@ -7,11 +7,12 @@ import AdminLayout from "@/components/AdminLayout";
 import LoginPage from "@/pages/LoginPage";
 import SuperAdminDashboard from "@/pages/SuperAdminDashboard";
 import ClubManagerDashboard from "@/pages/ClubManagerDashboard";
-import LeaguesPage from "@/pages/LeaguesPage";
+import ClubsPage from "@/pages/ClubsPage";
 import TeamsPage from "@/pages/TeamsPage";
 import PlayersPage from "@/pages/PlayersPage";
 import TournamentsPage from "@/pages/TournamentsPage";
 import MatchesPage from "@/pages/MatchesPage";
+import MatchSchedulingPage from "@/pages/MatchSchedulingPage";
 import LiveScoringPage from "@/pages/LiveScoringPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
 import SettingsPage from "@/pages/SettingsPage";
@@ -52,9 +53,9 @@ export default function App() {
         {/* Role-based dashboard */}
         <Route index element={<RoleDashboard />} />
 
-        {/* SuperAdmin-only: Leagues management */}
-        <Route path="leagues" element={
-          <ProtectedRoute allowedRoles={["superAdmin"]}><LeaguesPage /></ProtectedRoute>
+        {/* SuperAdmin-only: Clubs management */}
+        <Route path="clubs" element={
+          <ProtectedRoute allowedRoles={["superAdmin"]}><ClubsPage /></ProtectedRoute>
         } />
 
         {/* ClubManager + SuperAdmin */}
@@ -69,6 +70,9 @@ export default function App() {
         } />
         <Route path="matches" element={
           <ProtectedRoute allowedRoles={MANAGER_ROLES}><MatchesPage /></ProtectedRoute>
+        } />
+        <Route path="match-scheduling" element={
+          <ProtectedRoute allowedRoles={MANAGER_ROLES}><MatchSchedulingPage /></ProtectedRoute>
         } />
         <Route path="analytics" element={
           <ProtectedRoute allowedRoles={MANAGER_ROLES}><AnalyticsPage /></ProtectedRoute>

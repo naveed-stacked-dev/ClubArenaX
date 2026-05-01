@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import leagueService from "@/services/leagueService";
+import clubService from "@/services/clubService";
 import matchService from "@/services/matchService";
 import {
   Trophy, Users, Calendar, Radio, TrendingUp, Activity, Layers, Globe,
@@ -20,32 +20,24 @@ const PIE_COLORS = ["#7c3aed", "#06b6d4", "#f59e0b", "#ef4444", "#10b981"];
 
 export default function SuperAdminDashboard() {
   const [stats, setStats] = useState(null);
-  const [leagues, setLeagues] = useState([]);
+  const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [recentMatches, setRecentMatches] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [leagueRes, matchRes] = await Promise.allSettled([
-          leagueService.adminGetAll({ page: 1, limit: 100 }),
-          matchService.getAll({ page: 1, limit: 10 }),
-        ]);
-
-        const leagueData = leagueRes.status === "fulfilled" ? leagueRes.value.data : null;
-        const matchData = matchRes.status === "fulfilled" ? matchRes.value.data : null;
-
-        const allLeagues = leagueData?.data || leagueData?.leagues || leagueData || [];
+        const allClubs = clubData?.data || clubData?.clubs || clubData || [];
         const allMatches = matchData?.data || [];
 
-        setLeagues(Array.isArray(allLeagues) ? allLeagues : []);
+        setClubs(Array.isArray(allClubs) ? allClubs : []);
         setRecentMatches(allMatches.slice(0, 8));
 
         const live = allMatches.filter((m) => m.status === "live").length;
         const upcoming = allMatches.filter((m) => m.status === "scheduled" || m.status === "upcoming").length;
 
         setStats({
-          totalLeagues: Array.isArray(allLeagues) ? allLeagues.length : 0,
+          totalClubs: Array.isArray(allClubs) ? allClubs.length : 0,
           totalMatches: matchData?.total || allMatches.length || 0,
           liveMatches: live,
           upcoming,
@@ -60,21 +52,21 @@ export default function SuperAdminDashboard() {
   }, []);
 
   const statCards = [
-    { label: "Total Leagues", value: stats?.totalLeagues || 0, icon: Trophy, gradient: "from-violet-500/15 to-indigo-500/15", iconColor: "text-violet-500" },
+    { label: "Total Clubs", value: stats?.totalClubs || 0, icon: Trophy, gradient: "from-violet-500/15 to-indigo-500/15", iconColor: "text-violet-500" },
     { label: "Total Matches", value: stats?.totalMatches || 0, icon: Calendar, gradient: "from-emerald-500/15 to-teal-500/15", iconColor: "text-emerald-500" },
     { label: "Live Now", value: stats?.liveMatches || 0, icon: Radio, gradient: "from-red-500/15 to-orange-500/15", iconColor: "text-red-500" },
     { label: "Upcoming", value: stats?.upcoming || 0, icon: TrendingUp, gradient: "from-blue-500/15 to-cyan-500/15", iconColor: "text-blue-500" },
   ];
 
-  // League distribution chart data
-  const leagueChartData = leagues.slice(0, 6).map((l) => ({
-    name: l.name?.slice(0, 12) || "League",
+  // Club distribution chart data
+  const clubChartData = clubs.slice(0, 6).map((l) => ({
+    name: l.name?.slice(0, 12) || "Club",
     teams: l.teamCount || 0,
   }));
 
-  // League pie data
-  const leaguePieData = leagues.slice(0, 5).map((l) => ({
-    name: l.name?.slice(0, 12) || "League",
+  // Club pie data
+  const clubPieData = clubs.slice(0, 5).map((l) => ({
+    name: l.name?.slice(0, 12) || "Club",
     value: l.matchCount || l.teamCount || 1,
   }));
 
@@ -88,7 +80,7 @@ export default function SuperAdminDashboard() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Super Admin Dashboard</h1>
-            <p className="text-muted-foreground text-sm">Global overview across all leagues and clubs</p>
+            <p className="text-muted-foreground text-sm">Global overview across all clubs</p>
           </div>
         </div>
       </motion.div>
@@ -129,14 +121,14 @@ export default function SuperAdminDashboard() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Activity className="w-4 h-4 text-muted-foreground" />
-                League Overview
+                Club Overview
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[260px]">
-                {leagueChartData.length > 0 ? (
+                {clubChartData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={leagueChartData}>
+                    <BarChart data={clubChartData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                       <XAxis dataKey="name" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
                       <YAxis tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
@@ -146,7 +138,7 @@ export default function SuperAdminDashboard() {
                   </ResponsiveContainer>
                 ) : (
                   <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                    <p>No league data yet</p>
+                    <p>No club data yet</p>
                   </div>
                 )}
               </div>
@@ -159,16 +151,16 @@ export default function SuperAdminDashboard() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
                 <Layers className="w-4 h-4 text-muted-foreground" />
-                League Distribution
+                Club Distribution
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[260px]">
-                {leaguePieData.length > 0 ? (
+                {clubPieData.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={leaguePieData} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name }) => name}>
-                        {leaguePieData.map((_, index) => (
+                      <Pie data={clubPieData} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={({ name }) => name}>
+                        {clubPieData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
                         ))}
                       </Pie>
@@ -186,54 +178,54 @@ export default function SuperAdminDashboard() {
         </motion.div>
       </div>
 
-      {/* Leagues Grid */}
+      {/* Clubs Grid */}
       <motion.div variants={item}>
         <h2 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Trophy className="w-5 h-5 text-violet-500" /> All Leagues
+          <Trophy className="w-5 h-5 text-violet-500" /> All Clubs
         </h2>
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map((i) => <Skeleton key={i} className="h-32 rounded-xl" />)}
           </div>
-        ) : leagues.length === 0 ? (
+        ) : clubs.length === 0 ? (
           <Card>
             <CardContent className="text-center py-12 text-muted-foreground">
               <Trophy className="w-10 h-10 mx-auto mb-3 opacity-20" />
-              <p className="font-medium">No leagues created yet</p>
-              <p className="text-xs mt-1">Go to Leagues page to create your first league</p>
+              <p className="font-medium">No clubs created yet</p>
+              <p className="text-xs mt-1">Go to Clubs page to create your first club</p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {leagues.map((league) => (
-              <Card key={league._id || league.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
+            {clubs.map((club) => (
+              <Card key={club._id || club.id} className="overflow-hidden hover:shadow-lg transition-shadow group">
                 <CardContent className="p-5">
                   <div className="flex items-start gap-3">
                     <div
                       className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                      style={{ backgroundColor: `${league.themeColor || "#7c3aed"}20` }}
+                      style={{ backgroundColor: `${club.themeColor || "#7c3aed"}20` }}
                     >
-                      {league.logo ? (
-                        <img src={league.logo} alt="" className="w-7 h-7 rounded object-cover" />
+                      {club.logo ? (
+                        <img src={club.logo} alt="" className="w-7 h-7 rounded object-cover" />
                       ) : (
-                        <Trophy className="w-5 h-5" style={{ color: league.themeColor || "#7c3aed" }} />
+                        <Trophy className="w-5 h-5" style={{ color: club.themeColor || "#7c3aed" }} />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground text-sm truncate">{league.name}</h3>
-                      <p className="text-xs text-muted-foreground truncate">{league.slug}</p>
+                      <h3 className="font-semibold text-foreground text-sm truncate">{club.name}</h3>
+                      <p className="text-xs text-muted-foreground truncate">{club.slug}</p>
                     </div>
                     <div
                       className="w-3 h-3 rounded-full shrink-0 mt-1"
-                      style={{ backgroundColor: league.themeColor || "#7c3aed" }}
-                      title={`Theme: ${league.themeColor}`}
+                      style={{ backgroundColor: club.themeColor || "#7c3aed" }}
+                      title={`Theme: ${club.themeColor}`}
                     />
                   </div>
                   <div className="flex items-center gap-2 mt-4">
                     <Badge variant="outline" className="text-xs">
-                      <Users className="w-3 h-3 mr-1" /> {league.manager?.name || "No Manager"}
+                      <Users className="w-3 h-3 mr-1" /> {club.manager?.name || "No Manager"}
                     </Badge>
-                    {league.isActive === false && <Badge variant="destructive" className="text-xs">Inactive</Badge>}
+                    {club.isActive === false && <Badge variant="destructive" className="text-xs">Inactive</Badge>}
                   </div>
                 </CardContent>
               </Card>

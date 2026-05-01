@@ -17,4 +17,8 @@ router.get('/:id/points-table', tournamentController.getPointsTable);
 router.get('/:id/bracket', authenticate, attachTenant, tournamentController.getBracket);
 router.put('/:id/matches/:matchId/result', authenticate, clubManagerOnly, attachTenant, tournamentController.submitResult);
 
+// Visual Bracket Builder endpoints
+router.get('/:id/bracket-graph', authenticate, attachTenant, tournamentController.getBracketGraph);
+router.put('/:id/bracket-graph', authenticate, clubManagerOnly, attachTenant, tournamentController.saveBracketGraph);
+
 module.exports = router;

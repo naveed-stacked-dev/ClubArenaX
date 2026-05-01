@@ -4,7 +4,7 @@ import { useAppContext } from "@/hooks/useAppContext";
 import matchService from "@/services/matchService";
 import tournamentService from "@/services/tournamentService";
 import teamService from "@/services/teamService";
-import leagueService from "@/services/leagueService";
+import clubService from "@/services/clubService";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,17 +24,17 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function MatchesPage() {
-  const { user } = useAppContext();
+  const { user, clubId: contextClubId } = useAppContext();
   const navigate = useNavigate();
-  const [leagues, setLeagues] = useState([]);
-  const [selectedLeague, setSelectedLeague] = useState(null);
+  const [clubs, setClubs] = useState([]);
+  const [selectedClub, setSelectedClub] = useState(null);
   const [tournaments, setTournaments] = useState([]);
   const [selectedTournament, setSelectedTournament] = useState("all");
   const [teams, setTeams] = useState([]);
   const [matches, setMatches] = useState([]);
   
   const [loading, setLoading] = useState(false);
-  const [leagueLoading, setLeagueLoading] = useState(true);
+  const [clubLoading, setClubLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   const [showCreate, setShowCreate] = useState(false);
@@ -51,29 +51,29 @@ export default function MatchesPage() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        if (user?.role === "superAdmin") {
-          const res = await leagueService.adminGetAll();
-          const data = res.data?.data || res.data?.leagues || res.data || [];
-          setLeagues(Array.isArray(data) ? data : []);
-          if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+        if (user?.role === "superAdmin" || user?.role === "superadmin") {
+          const res = await clubService.adminGetAll();
+          const data = res.data?.data || res.data?.clubs || res.data || [];
+          setClubs(Array.isArray(data) ? data : []);
+          if (data.length > 0) setSelectedClub(data[0]._id || data[0].id);
         } else {
-          if (user?.leagueId) setSelectedLeague(user.leagueId);
+          if (contextClubId) setSelectedClub(contextClubId);
         }
       } catch { /* interceptor */ }
-      finally { setLeagueLoading(false); }
+      finally { setClubLoading(false); }
     };
     fetch();
-  }, [user]);
+  }, [user, contextClubId]);
 
   const fetchData = useCallback(async () => {
-    if (!selectedLeague) return;
+    if (!selectedClub) return;
     setLoading(true);
     try {
       const [tRes, tmRes, mRes] = await Promise.allSettled([
-        tournamentService.getByLeague(selectedLeague),
-        teamService.getByLeague(selectedLeague),
+        tournamentService.getByClub(selectedClub),
+        teamService.getByClub(selectedClub),
         selectedTournament === "all" 
-          ? matchService.getAll({ league: selectedLeague })
+          ? matchService.getAll({ club: selectedClub })
           : matchService.getByTournament(selectedTournament)
       ]);
       
@@ -88,7 +88,7 @@ export default function MatchesPage() {
       
     } catch { /* interceptor */ }
     finally { setLoading(false); }
-  }, [selectedLeague, selectedTournament]);
+  }, [selectedClub, selectedTournament]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -97,7 +97,7 @@ export default function MatchesPage() {
     if (form.teamA === form.teamB) return toast.error("Teams must be different");
     setSubmitting(true);
     try {
-      await matchService.create({ ...form, league: selectedLeague });
+      await matchService.create({ ...form, club: selectedClub });
       toast.success("Match created");
       setShowCreate(false);
       fetchData();
@@ -160,16 +160,16 @@ export default function MatchesPage() {
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Calendar className="w-6 h-6 text-indigo-500" /> Matches</h1>
           <p className="text-sm text-muted-foreground mt-1">Schedule matches and assign scorers</p>
         </div>
-        <Button onClick={() => { setForm({ teamA: "", teamB: "", tournament: selectedTournament === "all" ? "" : selectedTournament, venue: "", date: "", overs: "20" }); setShowCreate(true); }} disabled={!selectedLeague} className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-90">
+        <Button onClick={() => { setForm({ teamA: "", teamB: "", tournament: selectedTournament === "all" ? "" : selectedTournament, venue: "", date: "", overs: "20" }); setShowCreate(true); }} disabled={!selectedClub} className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-90">
           <Plus className="w-4 h-4 mr-2" /> Schedule Match
         </Button>
       </motion.div>
 
       <motion.div variants={item} className="flex flex-col sm:flex-row gap-3">
-        {user?.role === "superAdmin" && (
-          <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
-            <SelectTrigger className="w-full sm:w-[220px]"><SelectValue placeholder="League" /></SelectTrigger>
-            <SelectContent>{leagues.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}</SelectContent>
+        {(user?.role === "superAdmin" || user?.role === "superadmin") && (
+          <Select value={selectedClub || ""} onValueChange={setSelectedClub}>
+            <SelectTrigger className="w-full sm:w-[220px]"><SelectValue placeholder="Club" /></SelectTrigger>
+            <SelectContent>{clubs.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}</SelectContent>
           </Select>
         )}
         <Select value={selectedTournament} onValueChange={setSelectedTournament}>
@@ -188,10 +188,10 @@ export default function MatchesPage() {
       <motion.div variants={item}>
         <Card>
           <CardContent className="p-0">
-            {leagueLoading || loading ? (
+            {clubLoading || loading ? (
               <div className="p-6 space-y-3">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}</div>
-            ) : !selectedLeague ? (
-              <div className="text-center py-16 text-muted-foreground"><Shield className="w-12 h-12 mx-auto mb-3 opacity-20" /><p className="font-medium">Select a league</p></div>
+            ) : !selectedClub ? (
+              <div className="text-center py-16 text-muted-foreground"><Shield className="w-12 h-12 mx-auto mb-3 opacity-20" /><p className="font-medium">Select a club</p></div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-16 text-muted-foreground"><Calendar className="w-12 h-12 mx-auto mb-3 opacity-20" /><p className="font-medium">No matches found</p></div>
             ) : (

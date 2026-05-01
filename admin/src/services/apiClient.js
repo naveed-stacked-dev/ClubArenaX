@@ -71,7 +71,7 @@ apiClient.interceptors.response.use(
         toast.error("This URL slug is already in use. Try a different one.");
         break;
       case "DUPLICATE_TEAM_NAME":
-        toast.error("A team with this name already exists in this league.");
+        toast.error("A team with this name already exists in this club.");
         break;
       case "INVALID_CREDENTIALS":
         toast.error("Incorrect email or password. Please try again.");
@@ -85,8 +85,8 @@ apiClient.interceptors.response.use(
       case "INSUFFICIENT_ROLE":
         toast.error("You don't have permission to perform this action.");
         break;
-      case "LEAGUE_ACCESS_DENIED":
-        toast.error("You don't have access to this league.");
+      case "CLUB_ACCESS_DENIED":
+        toast.error("You don't have access to this club.");
         break;
       case "MATCH_ACCESS_DENIED":
         toast.error("You don't have permission to score this match.");
@@ -125,7 +125,7 @@ apiClient.interceptors.response.use(
         toast.error("Too many requests. Please slow down and try again.");
         break;
       case "NOT_FOUND":
-      case "LEAGUE_NOT_FOUND":
+      case "CLUB_NOT_FOUND":
       case "TEAM_NOT_FOUND":
       case "PLAYER_NOT_FOUND":
       case "MATCH_NOT_FOUND":

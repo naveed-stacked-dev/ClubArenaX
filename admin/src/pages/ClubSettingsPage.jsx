@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useAppContext } from "@/hooks/useAppContext";
-import leagueService from "@/services/leagueService";
+import clubService from "@/services/clubService";
 import ImageUpload from "@/components/ImageUpload";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ const PRESET_COLORS = [
 
 export default function ClubSettingsPage() {
   const {
-    leagueId, themeColor, updateThemeColor,
+    clubId, themeColor, updateThemeColor,
     clubName, clubLogo, clubBanner, loadClubData,
   } = useAppContext();
 
@@ -41,7 +41,7 @@ export default function ClubSettingsPage() {
   };
 
   const handleSaveAll = async () => {
-    if (!leagueId) return;
+    if (!clubId) return;
     setSavingTheme(true);
     try {
       const formData = new FormData();
@@ -54,9 +54,9 @@ export default function ClubSettingsPage() {
       else if (banner === null) formData.append("bannerUrl", "");
       else if (banner) formData.append("bannerUrl", banner);
 
-      await leagueService.update(leagueId, formData);
+      await clubService.update(clubId, formData);
       toast.success("Settings saved successfully!");
-      loadClubData(leagueId);
+      loadClubData(clubId);
     } catch {
       toast.error("Failed to save settings");
     } finally {

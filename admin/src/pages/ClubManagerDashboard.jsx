@@ -19,13 +19,13 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function ClubManagerDashboard() {
-  const { user, leagueId, clubName, clubLogo, themeColor } = useAppContext();
+  const { user, clubId, clubName, clubLogo, themeColor } = useAppContext();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [recentMatches, setRecentMatches] = useState([]);
 
   useEffect(() => {
-    if (!leagueId) {
+    if (!clubId) {
       setLoading(false);
       return;
     }
@@ -33,10 +33,10 @@ export default function ClubManagerDashboard() {
     const fetchData = async () => {
       try {
         const [teamRes, tournamentRes, matchRes, playerRes] = await Promise.allSettled([
-          teamService.getByLeague(leagueId),
-          tournamentService.getByLeague(leagueId),
-          matchService.getAll({ leagueId, page: 1, limit: 10 }),
-          playerService.getByLeague(leagueId),
+          teamService.getByClub(clubId),
+          tournamentService.getByClub(clubId),
+          matchService.getAll({ clubId, page: 1, limit: 10 }),
+          playerService.getByClub(clubId),
         ]);
 
         const teams = teamRes.status === "fulfilled" ? teamRes.value.data : null;
@@ -62,7 +62,7 @@ export default function ClubManagerDashboard() {
       }
     };
     fetchData();
-  }, [leagueId]);
+  }, [clubId]);
 
   const statCards = [
     { label: "Teams", value: stats?.totalTeams || 0, icon: Users, gradient: "from-emerald-500/15 to-teal-500/15", iconColor: "text-emerald-500" },

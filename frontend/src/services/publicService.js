@@ -1,9 +1,9 @@
 import apiClient from "./apiClient";
 
 const publicService = {
-  getLeagues: (params) => apiClient.get("/public/leagues", { params }),
-  getLeague: (slug) => apiClient.get(`/public/leagues/${slug}`),
-  getTournaments: (leagueId, params) => apiClient.get(`/public/tournaments/league/${leagueId}`, { params }),
+  getClubs: (params) => apiClient.get("/public/clubs", { params }),
+  getClub: (slug) => apiClient.get(`/public/clubs/${slug}`),
+  getTournaments: (clubId, params) => apiClient.get(`/public/tournaments/club/${clubId}`, { params }),
   getTournament: (id) => apiClient.get(`/public/tournaments/${id}`),
   getPointsTable: (id) => apiClient.get(`/public/tournaments/${id}/points-table`),
   getMatches: (params) => apiClient.get("/public/matches", { params }),

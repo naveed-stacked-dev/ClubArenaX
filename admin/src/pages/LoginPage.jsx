@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAppContext } from "@/hooks/useAppContext";
+import { useDynamicHead } from "@/hooks/useDynamicHead";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
@@ -17,6 +18,7 @@ const ROLES = [
 ];
 
 export default function LoginPage() {
+  useDynamicHead();
   const navigate = useNavigate();
   const { login } = useAppContext();
   const [role, setRole] = useState("superadmin");
@@ -194,7 +196,7 @@ export default function LoginPage() {
         </Card>
 
         <p className="text-center text-xs text-muted-foreground mt-6">
-          Cricket League Management Platform &copy; {new Date().getFullYear()}
+          Cricket Club Management Platform &copy; {new Date().getFullYear()}
         </p>
       </motion.div>
     </div>

@@ -71,10 +71,17 @@ const matchSchema = new mongoose.Schema(
       nextMatchId: { type: mongoose.Schema.Types.ObjectId, ref: 'Match', default: null },
       // Which slot (A or B) the winner fills in the next match
       nextMatchSlot: { type: String, enum: ['A', 'B', null], default: null },
+      // Free-form canvas position for the bracket builder UI
+      positionX: { type: Number, default: null },
+      positionY: { type: Number, default: null },
     },
     oversPerInning: {
       type: Number,
       default: 20,
+    },
+    matchLabel: {
+      type: String,
+      default: null,
     },
     matchNumber: {
       type: Number,

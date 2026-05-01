@@ -16,15 +16,17 @@ import {
   ChevronLeft,
   ChevronRight,
   Palette,
+  GitBranch,
 } from "lucide-react";
 
 const NAV_ITEMS = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard, roles: ["superAdmin", "clubManager", "matchManager"] },
-  { path: "/leagues", label: "Leagues", icon: Trophy, roles: ["superAdmin"] },
+  { path: "/clubs", label: "Clubs", icon: Trophy, roles: ["superAdmin"] },
   { path: "/tournaments", label: "Tournaments", icon: Swords, roles: ["superAdmin", "clubManager"] },
   { path: "/teams", label: "Teams", icon: Users, roles: ["superAdmin", "clubManager"] },
   { path: "/players", label: "Players", icon: UserCircle, roles: ["superAdmin", "clubManager"] },
   { path: "/matches", label: "Matches", icon: Calendar, roles: ["superAdmin", "clubManager"] },
+  { path: "/match-scheduling", label: "Match Scheduling", icon: GitBranch, roles: ["superAdmin", "clubManager"] },
   { path: "/scoring", label: "Live Scoring", icon: Radio, roles: ["clubManager", "matchManager"] },
   { path: "/analytics", label: "Analytics", icon: BarChart3, roles: ["superAdmin", "clubManager"] },
   { path: "/settings", label: "Settings", icon: Settings, roles: ["superAdmin"] },

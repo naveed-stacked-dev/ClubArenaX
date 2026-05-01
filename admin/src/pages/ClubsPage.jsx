@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppContext } from "@/hooks/useAppContext";
-import leagueService from "@/services/leagueService";
+import clubService from "@/services/clubService";
 import authService from "@/services/authService";
 import { toast } from "sonner";
 import ImageUpload from "@/components/ImageUpload";
@@ -50,9 +50,9 @@ import {
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
-export default function LeaguesPage() {
+export default function ClubsPage() {
   const { isSuperAdmin } = useAppContext();
-  const [leagues, setLeagues] = useState([]);
+  const [clubs, setClubs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -68,11 +68,11 @@ export default function LeaguesPage() {
   const [form, setForm] = useState({ name: "", slug: "", sportType: "cricket", logoUrl: "" });
   const [assignForm, setAssignForm] = useState({ email: "", password: "", name: "" });
 
-  const fetchLeagues = useCallback(async () => {
+  const fetchClubs = useCallback(async () => {
     try {
-      const res = await leagueService.adminGetAll();
-      const data = res.data?.data || res.data?.leagues || res.data || [];
-      setLeagues(Array.isArray(data) ? data : []);
+      const res = await clubService.adminGetAll();
+      const data = res.data?.data || res.data?.clubs || res.data || [];
+      setClubs(Array.isArray(data) ? data : []);
     } catch {
       // handled by interceptor
     } finally {
@@ -80,12 +80,12 @@ export default function LeaguesPage() {
     }
   }, []);
 
-  useEffect(() => { fetchLeagues(); }, [fetchLeagues]);
+  useEffect(() => { fetchClubs(); }, [fetchClubs]);
 
   const resetForm = () => setForm({ name: "", slug: "", sportType: "cricket", logoUrl: "" });
 
   const handleCreate = async () => {
-    if (!form.name.trim()) return toast.error("League name is required");
+    if (!form.name.trim()) return toast.error("Club name is required");
     setSubmitting(true);
     try {
       const formData = new FormData();
@@ -98,11 +98,11 @@ export default function LeaguesPage() {
         formData.append("logo", form.logoUrl);
       }
 
-      await leagueService.adminCreate(formData);
-      toast.success("League created successfully");
+      await clubService.adminCreate(formData);
+      toast.success("Club created successfully");
       setShowCreate(false);
       resetForm();
-      fetchLeagues();
+      fetchClubs();
     } catch { /* interceptor */ } finally { setSubmitting(false); }
   };
 
@@ -121,20 +121,20 @@ export default function LeaguesPage() {
         formData.append("logo", form.logoUrl);
       }
 
-      await leagueService.update(selected._id || selected.id, formData);
-      toast.success("League updated");
+      await clubService.update(selected._id || selected.id, formData);
+      toast.success("Club updated");
       setShowEdit(false);
-      fetchLeagues();
+      fetchClubs();
     } catch { /* interceptor */ } finally { setSubmitting(false); }
   };
 
   const handleDelete = async () => {
     setSubmitting(true);
     try {
-      await leagueService.remove(selected._id || selected.id);
-      toast.success("League deleted");
+      await clubService.remove(selected._id || selected.id);
+      toast.success("Club deleted");
       setShowDelete(false);
-      fetchLeagues();
+      fetchClubs();
     } catch { /* interceptor */ } finally { setSubmitting(false); }
   };
 
@@ -145,36 +145,36 @@ export default function LeaguesPage() {
     setSubmitting(true);
     try {
       if (selected.manager) {
-        await leagueService.updateManager(selected._id || selected.id, selected.manager._id, assignForm);
+        await clubService.updateManager(selected._id || selected.id, selected.manager._id, assignForm);
         toast.success("Manager updated successfully");
       } else {
-        await leagueService.createManager(selected._id || selected.id, assignForm);
+        await clubService.createManager(selected._id || selected.id, assignForm);
         toast.success("Manager created successfully");
       }
       setShowManager(false);
       setAssignForm({ email: "", password: "", name: "" });
-      fetchLeagues();
+      fetchClubs();
     } catch { /* interceptor */ } finally { setSubmitting(false); }
   };
 
-  const openEdit = (league) => {
-    setSelected(league);
-    setForm({ name: league.name || "", slug: league.slug || "", sportType: league.sportType || "cricket", logoUrl: league.logoUrl || "" });
+  const openEdit = (club) => {
+    setSelected(club);
+    setForm({ name: club.name || "", slug: club.slug || "", sportType: club.sportType || "cricket", logoUrl: club.logoUrl || "" });
     setShowEdit(true);
   };
 
-  const openDelete = (league) => { setSelected(league); setShowDelete(true); };
-  const openManager = (league) => { 
-    setSelected(league); 
-    if (league.manager) {
-      setAssignForm({ email: league.manager.email || "", password: "", name: league.manager.name || "" });
+  const openDelete = (club) => { setSelected(club); setShowDelete(true); };
+  const openManager = (club) => { 
+    setSelected(club); 
+    if (club.manager) {
+      setAssignForm({ email: club.manager.email || "", password: "", name: club.manager.name || "" });
     } else {
       setAssignForm({ email: "", password: "", name: "" }); 
     }
     setShowManager(true); 
   };
 
-  const filtered = leagues.filter((l) =>
+  const filtered = clubs.filter((l) =>
     (l.name || "").toLowerCase().includes(search.toLowerCase()) ||
     (l.slug || "").toLowerCase().includes(search.toLowerCase())
   );
@@ -185,12 +185,12 @@ export default function LeaguesPage() {
       <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Trophy className="w-6 h-6 text-violet-500" /> Leagues
+            <Trophy className="w-6 h-6 text-violet-500" /> Clubs
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage all cricket leagues across the platform</p>
+          <p className="text-sm text-muted-foreground mt-1">Manage all cricket clubs across the platform</p>
         </div>
         <Button onClick={() => { resetForm(); setShowCreate(true); }} className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white hover:opacity-90">
-          <Plus className="w-4 h-4 mr-2" /> Create League
+          <Plus className="w-4 h-4 mr-2" /> Create Club
         </Button>
       </motion.div>
 
@@ -198,7 +198,7 @@ export default function LeaguesPage() {
       <motion.div variants={item}>
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search leagues..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
+          <Input placeholder="Search clubs..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
         </div>
       </motion.div>
 
@@ -213,14 +213,14 @@ export default function LeaguesPage() {
             ) : filtered.length === 0 ? (
               <div className="text-center py-16 text-muted-foreground">
                 <Trophy className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                <p className="font-medium">No leagues found</p>
-                <p className="text-xs mt-1">{search ? "Try a different search term" : "Create your first league to get started"}</p>
+                <p className="font-medium">No clubs found</p>
+                <p className="text-xs mt-1">{search ? "Try a different search term" : "Create your first club to get started"}</p>
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>League</TableHead>
+                    <TableHead>Club</TableHead>
                     <TableHead>Slug</TableHead>
                     <TableHead>Sport</TableHead>
                     <TableHead>Manager</TableHead>
@@ -230,9 +230,9 @@ export default function LeaguesPage() {
                 </TableHeader>
                 <TableBody>
                   <AnimatePresence>
-                    {filtered.map((league) => (
+                    {filtered.map((club) => (
                       <motion.tr
-                        key={league._id || league.id}
+                        key={club._id || club.id}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -241,30 +241,30 @@ export default function LeaguesPage() {
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-violet-500/20 to-indigo-500/20 flex items-center justify-center">
-                              {league.logoUrl ? (
-                                <img src={league.logoUrl} alt="" className="w-6 h-6 rounded object-cover" />
+                              {club.logoUrl ? (
+                                <img src={club.logoUrl} alt="" className="w-6 h-6 rounded object-cover" />
                               ) : (
                                 <Trophy className="w-4 h-4 text-violet-500" />
                               )}
                             </div>
-                            <span className="font-medium text-foreground">{league.name}</span>
+                            <span className="font-medium text-foreground">{club.name}</span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary" className="font-mono text-xs">
-                            <Globe className="w-3 h-3 mr-1" />{league.slug || "—"}
+                            <Globe className="w-3 h-3 mr-1" />{club.slug || "—"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-muted-foreground capitalize">{league.sportType || "cricket"}</TableCell>
+                        <TableCell className="text-muted-foreground capitalize">{club.sportType || "cricket"}</TableCell>
                         <TableCell>
-                          {league.manager?.name || league.manager?.email ? (
-                            <Badge variant="outline" className="text-xs">{league.manager?.name || league.manager?.email}</Badge>
+                          {club.manager?.name || club.manager?.email ? (
+                            <Badge variant="outline" className="text-xs">{club.manager?.name || club.manager?.email}</Badge>
                           ) : (
                             <span className="text-xs text-muted-foreground">Unassigned</span>
                           )}
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">
-                          {league.createdAt ? new Date(league.createdAt).toLocaleDateString() : "—"}
+                          {club.createdAt ? new Date(club.createdAt).toLocaleDateString() : "—"}
                         </TableCell>
                         <TableCell>
                           <DropdownMenu>
@@ -274,13 +274,13 @@ export default function LeaguesPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openEdit(league)}>
+                              <DropdownMenuItem onClick={() => openEdit(club)}>
                                 <Pencil className="w-4 h-4 mr-2" /> Edit
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openManager(league)}>
-                                <UserPlus className="w-4 h-4 mr-2" /> {league.manager ? "Edit Manager" : "Create Manager"}
+                              <DropdownMenuItem onClick={() => openManager(club)}>
+                                <UserPlus className="w-4 h-4 mr-2" /> {club.manager ? "Edit Manager" : "Create Manager"}
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => openDelete(league)} className="text-destructive focus:text-destructive">
+                              <DropdownMenuItem onClick={() => openDelete(club)} className="text-destructive focus:text-destructive">
                                 <Trash2 className="w-4 h-4 mr-2" /> Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -300,20 +300,20 @@ export default function LeaguesPage() {
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create League</DialogTitle>
-            <DialogDescription>Add a new cricket league to the platform</DialogDescription>
+            <DialogTitle>Create Club</DialogTitle>
+            <DialogDescription>Add a new cricket club to the platform</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>League Name</Label>
-              <Input placeholder="e.g. Premier Cricket League" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <Label>Club Name</Label>
+              <Input placeholder="e.g. Premier Cricket Club" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="space-y-2">
               <Label>Slug</Label>
-              <Input placeholder="e.g. premier-cricket-league" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+              <Input placeholder="e.g. premier-cricket-club" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label>League Logo</Label>
+              <Label>Club Logo</Label>
               <ImageUpload
                 value={form.logoUrl}
                 onChange={(fileOrUrl) => setForm({ ...form, logoUrl: fileOrUrl })}
@@ -335,12 +335,12 @@ export default function LeaguesPage() {
       <Dialog open={showEdit} onOpenChange={setShowEdit}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit League</DialogTitle>
-            <DialogDescription>Update league details</DialogDescription>
+            <DialogTitle>Edit Club</DialogTitle>
+            <DialogDescription>Update club details</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label>League Name</Label>
+              <Label>Club Name</Label>
               <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
             </div>
             <div className="space-y-2">
@@ -348,7 +348,7 @@ export default function LeaguesPage() {
               <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
             </div>
             <div className="space-y-2">
-              <Label>League Logo</Label>
+              <Label>Club Logo</Label>
               <ImageUpload
                 value={form.logoUrl}
                 onChange={(fileOrUrl) => setForm({ ...form, logoUrl: fileOrUrl })}
@@ -370,7 +370,7 @@ export default function LeaguesPage() {
       <Dialog open={showDelete} onOpenChange={setShowDelete}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete League</DialogTitle>
+            <DialogTitle>Delete Club</DialogTitle>
             <DialogDescription>Are you sure you want to delete <strong>{selected?.name}</strong>? This action cannot be undone.</DialogDescription>
           </DialogHeader>
           <DialogFooter>

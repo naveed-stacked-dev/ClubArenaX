@@ -4,8 +4,8 @@ const objectId = Joi.string().regex(/^[a-fA-F0-9]{24}$/).message('{{#label}} mus
 
 // ─── Match CRUD ──────────────────────────────────────────────────
 const createMatchSchema = Joi.object({
-  teamA: objectId.required().messages({ 'any.required': 'Team A is required' }),
-  teamB: objectId.required().messages({ 'any.required': 'Team B is required' }),
+  teamA: objectId.optional(),
+  teamB: objectId.optional(),
   tournamentId: objectId.required().messages({ 'any.required': 'Tournament ID is required' }),
   clubId: objectId.required().messages({ 'any.required': 'Club ID is required' }),
   venue: Joi.string().trim().max(200).allow(null, '').optional(),
@@ -13,6 +13,7 @@ const createMatchSchema = Joi.object({
   oversPerInning: Joi.number().integer().min(1).max(50).default(20),
   matchNumber: Joi.number().integer().optional(),
   round: Joi.number().integer().optional(),
+  matchLabel: Joi.string().trim().max(50).allow(null, '').optional(),
 });
 
 const updateMatchSchema = Joi.object({
@@ -22,6 +23,7 @@ const updateMatchSchema = Joi.object({
   oversPerInning: Joi.number().integer().min(1).max(50).optional(),
   matchNumber: Joi.number().integer().optional(),
   round: Joi.number().integer().optional(),
+  matchLabel: Joi.string().trim().max(50).allow(null, '').optional(),
 }).min(1).messages({ 'object.min': 'At least one field must be provided to update' });
 
 const scheduleMatchSchema = Joi.object({

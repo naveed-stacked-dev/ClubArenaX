@@ -1,6 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from "react";
 import authService from "@/services/authService";
-import leagueService from "@/services/leagueService";
+import clubService from "@/services/clubService";
 
 export const AppContext = createContext(null);
 
@@ -22,7 +22,7 @@ export function AppProvider({ children }) {
   });
 
   // ─── Multi-tenant state ───
-  const [leagueId, setLeagueId] = useState(null);
+  const [clubId, setClubId] = useState(null);
   const [themeColor, setThemeColor] = useState("#7c3aed");
   const [clubName, setClubName] = useState(null);
   const [clubLogo, setClubLogo] = useState(null);
@@ -39,22 +39,22 @@ export function AppProvider({ children }) {
   }, []);
 
   // ─── Fetch club data for ClubManagers ───
-  const loadClubData = useCallback(async (userLeagueId) => {
-    if (!userLeagueId) return;
+  const loadClubData = useCallback(async (userClubId) => {
+    if (!userClubId) return;
     try {
-      const res = await leagueService.getById(userLeagueId);
-      const league = res.data?.data || res.data;
-      if (league) {
-        setLeagueId(userLeagueId);
-        setClubName(league.name || null);
-        setClubLogo(league.logo || null);
-        setClubBanner(league.bannerUrl || null);
-        const color = league.themeColor || "#7c3aed";
+      const res = await clubService.getById(userClubId);
+      const club = res.data?.data || res.data;
+      if (club) {
+        setClubId(userClubId);
+        setClubName(club.name || null);
+        setClubLogo(club.logo || null);
+        setClubBanner(club.bannerUrl || null);
+        const color = club.themeColor || "#7c3aed";
         setThemeColor(color);
         applyThemeColor(color);
       }
     } catch {
-      // Non-blocking — we don't break login if league fetch fails
+      // Non-blocking — we don't break login if club fetch fails
     }
   }, []);
 
@@ -84,8 +84,8 @@ export function AppProvider({ children }) {
     setUser(userData);
 
     // Load club data for scoped roles
-    if (userData?.leagueId) {
-      await loadClubData(userData.leagueId);
+    if (userData?.clubId) {
+      await loadClubData(userData.clubId);
     }
 
     return userData;
@@ -97,7 +97,7 @@ export function AppProvider({ children }) {
     localStorage.removeItem("admin_user");
     setToken(null);
     setUser(null);
-    setLeagueId(null);
+    setClubId(null);
     setThemeColor("#7c3aed");
     setClubName(null);
     setClubLogo(null);
@@ -120,8 +120,8 @@ export function AppProvider({ children }) {
         setUser(userData);
 
         // Load club data for scoped roles
-        if (userData?.leagueId) {
-          await loadClubData(userData.leagueId);
+        if (userData?.clubId) {
+          await loadClubData(userData.clubId);
         }
       } catch {
         logout();
@@ -157,7 +157,7 @@ export function AppProvider({ children }) {
       isMatchManager,
       isAuthenticated: !!user,
       // Multi-tenant
-      leagueId,
+      clubId,
       themeColor,
       clubName,
       clubLogo,
@@ -165,7 +165,7 @@ export function AppProvider({ children }) {
       updateThemeColor,
       loadClubData,
     }),
-    [user, token, loading, darkMode, toggleDarkMode, login, logout, isSuperAdmin, isClubManager, isMatchManager, leagueId, themeColor, clubName, clubLogo, clubBanner, updateThemeColor, loadClubData]
+    [user, token, loading, darkMode, toggleDarkMode, login, logout, isSuperAdmin, isClubManager, isMatchManager, clubId, themeColor, clubName, clubLogo, clubBanner, updateThemeColor, loadClubData]
   );
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAppContext } from "@/hooks/useAppContext";
-import leagueService from "@/services/leagueService";
+import clubService from "@/services/clubService";
 import teamService from "@/services/teamService";
 import { toast } from "sonner";
 import ImageUpload from "@/components/ImageUpload";
@@ -21,12 +21,12 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function TeamsPage() {
-  const { user } = useAppContext();
-  const [leagues, setLeagues] = useState([]);
-  const [selectedLeague, setSelectedLeague] = useState(null);
+  const { user, clubId: contextClubId } = useAppContext();
+  const [clubs, setClubs] = useState([]);
+  const [selectedClub, setSelectedClub] = useState(null);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [leagueLoading, setLeagueLoading] = useState(true);
+  const [clubLoading, setClubLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   // Modal
@@ -41,35 +41,35 @@ export default function TeamsPage() {
   const [rosterLoading, setRosterLoading] = useState(false);
   const [addPlayerForm, setAddPlayerForm] = useState({ playerId: "" });
 
-  // Fetch leagues for drill-down
+  // Fetch clubs for drill-down
   useEffect(() => {
     const fetch = async () => {
       try {
-        if (user?.role === "superAdmin") {
-          const res = await leagueService.adminGetAll();
-          const data = res.data?.data || res.data?.leagues || res.data || [];
-          setLeagues(Array.isArray(data) ? data : []);
-          if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+        if (user?.role === "superAdmin" || user?.role === "superadmin") {
+          const res = await clubService.adminGetAll();
+          const data = res.data?.data || res.data?.clubs || res.data || [];
+          setClubs(Array.isArray(data) ? data : []);
+          if (data.length > 0) setSelectedClub(data[0]._id || data[0].id);
         } else {
-          if (user?.leagueId) setSelectedLeague(user.leagueId);
+          if (contextClubId) setSelectedClub(contextClubId);
         }
       } catch { /* interceptor */ }
-      finally { setLeagueLoading(false); }
+      finally { setClubLoading(false); }
     };
     fetch();
-  }, [user]);
+  }, [user, contextClubId]);
 
-  // Fetch teams for selected league
+  // Fetch teams for selected club
   const fetchTeams = useCallback(async () => {
-    if (!selectedLeague) return;
+    if (!selectedClub) return;
     setLoading(true);
     try {
-      const res = await teamService.getByLeague(selectedLeague);
+      const res = await teamService.getByClub(selectedClub);
       const data = res.data?.data || res.data?.teams || res.data || [];
       setTeams(Array.isArray(data) ? data : []);
     } catch { /* interceptor */ }
     finally { setLoading(false); }
-  }, [selectedLeague]);
+  }, [selectedClub]);
 
   useEffect(() => { fetchTeams(); }, [fetchTeams]);
 
@@ -90,7 +90,7 @@ export default function TeamsPage() {
     try {
       const formData = new FormData();
       formData.append("name", form.name);
-      formData.append("leagueId", selectedLeague);
+      formData.append("clubId", selectedClub);
       if (form.logoUrl instanceof File) {
         formData.append("logo", form.logoUrl);
       } else if (form.logoUrl) {
@@ -151,7 +151,7 @@ export default function TeamsPage() {
 
   const filtered = teams.filter((t) => (t.name || "").toLowerCase().includes(search.toLowerCase()));
 
-  const currentLeagueName = leagues.find((l) => (l._id || l.id) === selectedLeague)?.name || "Select league";
+  const currentClubName = clubs.find((l) => (l._id || l.id) === selectedClub)?.name || "Select club";
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
@@ -161,22 +161,22 @@ export default function TeamsPage() {
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
             <Users className="w-6 h-6 text-emerald-500" /> Teams
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage team rosters within your leagues</p>
+          <p className="text-sm text-muted-foreground mt-1">Manage team rosters within your clubs</p>
         </div>
-        <Button onClick={() => { setForm({ name: "", logoUrl: "" }); setShowCreate(true); }} disabled={!selectedLeague} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:opacity-90">
+        <Button onClick={() => { setForm({ name: "", logoUrl: "" }); setShowCreate(true); }} disabled={!selectedClub} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:opacity-90">
           <Plus className="w-4 h-4 mr-2" /> Create Team
         </Button>
       </motion.div>
 
-      {/* League Selector + Search */}
+      {/* Club Selector + Search */}
       <motion.div variants={item} className="flex flex-col sm:flex-row gap-3">
-        {user?.role === "superadmin" && (
-          <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
+        {(user?.role === "superAdmin" || user?.role === "superadmin") && (
+          <Select value={selectedClub || ""} onValueChange={setSelectedClub}>
             <SelectTrigger className="w-full sm:w-[260px]">
-              <SelectValue placeholder="Select a league" />
+              <SelectValue placeholder="Select a club" />
             </SelectTrigger>
             <SelectContent>
-              {leagues.map((l) => (
+              {clubs.map((l) => (
                 <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>
               ))}
             </SelectContent>
@@ -192,21 +192,21 @@ export default function TeamsPage() {
       <motion.div variants={item}>
         <Card>
           <CardContent className="p-0">
-            {leagueLoading || loading ? (
+            {clubLoading || loading ? (
               <div className="p-6 space-y-3">
                 {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}
               </div>
-            ) : !selectedLeague ? (
+            ) : !selectedClub ? (
               <div className="text-center py-16 text-muted-foreground">
                 <Shield className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                <p className="font-medium">Select a league</p>
-                <p className="text-xs mt-1">Choose a league from the dropdown to view its teams</p>
+                <p className="font-medium">Select a club</p>
+                <p className="text-xs mt-1">Choose a club from the dropdown to view its teams</p>
               </div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-16 text-muted-foreground">
                 <Users className="w-12 h-12 mx-auto mb-3 opacity-20" />
                 <p className="font-medium">No teams found</p>
-                <p className="text-xs mt-1">{search ? "Try different search" : "Create the first team for this league"}</p>
+                <p className="text-xs mt-1">{search ? "Try different search" : "Create the first team for this club"}</p>
               </div>
             ) : (
               <Table>
@@ -263,7 +263,7 @@ export default function TeamsPage() {
       {/* Create */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Create Team</DialogTitle><DialogDescription>Add a new team to {currentLeagueName}</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Create Team</DialogTitle><DialogDescription>Add a new team to {currentClubName}</DialogDescription></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2"><Label>Team Name</Label><Input placeholder="e.g. Thunder Kings" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
             <div className="space-y-2">

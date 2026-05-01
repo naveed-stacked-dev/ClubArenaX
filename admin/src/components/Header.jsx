@@ -34,7 +34,7 @@ function getRoleBadgeVariant(role) {
 function getPageTitle(pathname) {
   const map = {
     "/": "Dashboard",
-    "/leagues": "Leagues",
+    "/clubs": "Clubs",
     "/tournaments": "Tournaments",
     "/teams": "Teams",
     "/players": "Players",
@@ -67,15 +67,15 @@ export default function Header() {
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
         {/* Theme Toggle */}
-        <Button variant="ghost" size="icon" onClick={toggleDarkMode} className="text-muted-foreground hover:text-foreground">
+        {/* <Button variant="ghost" size="icon" onClick={toggleDarkMode} className="text-muted-foreground hover:text-foreground">
           {darkMode ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        </Button>
+        </Button> */}
 
         {/* Notifications placeholder */}
-        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground relative">
+        {/* <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground relative">
           <Bell className="h-4 w-4" />
           <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
-        </Button>
+        </Button> */}
 
         <Separator orientation="vertical" className="h-6 mx-1" />
 

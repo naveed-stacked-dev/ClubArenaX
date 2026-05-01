@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { useAppContext } from "@/hooks/useAppContext";
-import leagueService from "@/services/leagueService";
+import clubService from "@/services/clubService";
 import teamService from "@/services/teamService";
 import playerService from "@/services/playerService";
 import { toast } from "sonner";
@@ -24,13 +24,13 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 const PLAYER_ROLES = ["batsman", "bowler", "allrounder", "wicketkeeper"];
 
 export default function PlayersPage() {
-  const { user } = useAppContext();
-  const [leagues, setLeagues] = useState([]);
-  const [selectedLeague, setSelectedLeague] = useState(null);
+  const { user, clubId: contextClubId } = useAppContext();
+  const [clubs, setClubs] = useState([]);
+  const [selectedClub, setSelectedClub] = useState(null);
   const [players, setPlayers] = useState([]);
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [leagueLoading, setLeagueLoading] = useState(true);
+  const [clubLoading, setClubLoading] = useState(true);
   const [search, setSearch] = useState("");
 
   const [showCreate, setShowCreate] = useState(false);
@@ -47,27 +47,27 @@ export default function PlayersPage() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        if (user?.role === "superAdmin") {
-          const res = await leagueService.adminGetAll();
-          const data = res.data?.data || res.data?.leagues || res.data || [];
-          setLeagues(Array.isArray(data) ? data : []);
-          if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+        if (user?.role === "superAdmin" || user?.role === "superadmin") {
+          const res = await clubService.adminGetAll();
+          const data = res.data?.data || res.data?.clubs || res.data || [];
+          setClubs(Array.isArray(data) ? data : []);
+          if (data.length > 0) setSelectedClub(data[0]._id || data[0].id);
         } else {
-          if (user?.leagueId) setSelectedLeague(user.leagueId);
+          if (contextClubId) setSelectedClub(contextClubId);
         }
       } catch { /* interceptor */ }
-      finally { setLeagueLoading(false); }
+      finally { setClubLoading(false); }
     };
     fetch();
-  }, [user]);
+  }, [user, contextClubId]);
 
   const fetchPlayers = useCallback(async () => {
-    if (!selectedLeague) return;
+    if (!selectedClub) return;
     setLoading(true);
     try {
       const [pRes, tRes] = await Promise.allSettled([
-        playerService.getByLeague(selectedLeague),
-        teamService.getByLeague(selectedLeague),
+        playerService.getByClub(selectedClub),
+        teamService.getByClub(selectedClub),
       ]);
       const pData = pRes.status === "fulfilled" ? (pRes.value.data?.data || pRes.value.data?.players || pRes.value.data || []) : [];
       const tData = tRes.status === "fulfilled" ? (tRes.value.data?.data || tRes.value.data?.teams || tRes.value.data || []) : [];
@@ -75,7 +75,7 @@ export default function PlayersPage() {
       setTeams(Array.isArray(tData) ? tData : []);
     } catch { /* interceptor */ }
     finally { setLoading(false); }
-  }, [selectedLeague]);
+  }, [selectedClub]);
 
   useEffect(() => { fetchPlayers(); }, [fetchPlayers]);
 
@@ -86,7 +86,7 @@ export default function PlayersPage() {
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("role", form.role);
-      formData.append("leagueId", selectedLeague);
+      formData.append("clubId", selectedClub);
       if (form.team) formData.append("teamId", form.team);
       if (form.photoUrl instanceof File) {
         formData.append("avatar", form.photoUrl);
@@ -168,16 +168,16 @@ export default function PlayersPage() {
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><UserCircle className="w-6 h-6 text-blue-500" /> Players</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage player database and view stats</p>
         </div>
-        <Button onClick={() => { setForm({ name: "", role: "batsman", jerseyNumber: "", phone: "", photoUrl: "", team: "" }); setShowCreate(true); }} disabled={!selectedLeague} className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:opacity-90">
+        <Button onClick={() => { setForm({ name: "", role: "batsman", jerseyNumber: "", phone: "", photoUrl: "", team: "" }); setShowCreate(true); }} disabled={!selectedClub} className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:opacity-90">
           <Plus className="w-4 h-4 mr-2" /> Add Player
         </Button>
       </motion.div>
 
       <motion.div variants={item} className="flex flex-col sm:flex-row gap-3">
-        {user?.role === "superAdmin" && (
-          <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
-            <SelectTrigger className="w-full sm:w-[260px]"><SelectValue placeholder="Select a league" /></SelectTrigger>
-            <SelectContent>{leagues.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}</SelectContent>
+        {(user?.role === "superAdmin" || user?.role === "superadmin") && (
+          <Select value={selectedClub || ""} onValueChange={setSelectedClub}>
+            <SelectTrigger className="w-full sm:w-[260px]"><SelectValue placeholder="Select a club" /></SelectTrigger>
+            <SelectContent>{clubs.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}</SelectContent>
           </Select>
         )}
         <div className="relative flex-1 max-w-sm">
@@ -189,10 +189,10 @@ export default function PlayersPage() {
       <motion.div variants={item}>
         <Card>
           <CardContent className="p-0">
-            {leagueLoading || loading ? (
+            {clubLoading || loading ? (
               <div className="p-6 space-y-3">{[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}</div>
-            ) : !selectedLeague ? (
-              <div className="text-center py-16 text-muted-foreground"><Shield className="w-12 h-12 mx-auto mb-3 opacity-20" /><p className="font-medium">Select a league</p></div>
+            ) : !selectedClub ? (
+              <div className="text-center py-16 text-muted-foreground"><Shield className="w-12 h-12 mx-auto mb-3 opacity-20" /><p className="font-medium">Select a club</p></div>
             ) : filtered.length === 0 ? (
               <div className="text-center py-16 text-muted-foreground"><UserCircle className="w-12 h-12 mx-auto mb-3 opacity-20" /><p className="font-medium">No players found</p></div>
             ) : (
@@ -247,7 +247,7 @@ export default function PlayersPage() {
       {/* Create */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Add Player</DialogTitle><DialogDescription>Add a new player to the league</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle>Add Player</DialogTitle><DialogDescription>Add a new player to the club</DialogDescription></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2"><Label>Name</Label><Input placeholder="Player name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>

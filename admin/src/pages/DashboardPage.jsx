@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { useAppContext } from "@/hooks/useAppContext";
-import leagueService from "@/services/leagueService";
+import clubService from "@/services/clubService";
 import matchService from "@/services/matchService";
 import {
   Trophy,
@@ -66,16 +66,16 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [leagueRes, matchRes] = await Promise.allSettled([
-          leagueService.getAll({ page: 1, limit: 5 }),
+        const [clubRes, matchRes] = await Promise.allSettled([
+          clubService.getAll({ page: 1, limit: 5 }),
           matchService.getAll({ page: 1, limit: 5 }),
         ]);
 
-        const leagues = leagueRes.status === "fulfilled" ? leagueRes.value.data : null;
+        const clubs = clubRes.status === "fulfilled" ? clubRes.value.data : null;
         const matches = matchRes.status === "fulfilled" ? matchRes.value.data : null;
 
         setStats({
-          totalLeagues: leagues?.data?.length || leagues?.total || 0,
+          totalClubs: clubs?.data?.length || clubs?.total || 0,
           totalMatches: matches?.data?.length || matches?.total || 0,
           liveMatches: (matches?.data || []).filter((m) => m.status === "live").length,
           upcoming: (matches?.data || []).filter((m) => m.status === "scheduled" || m.status === "upcoming").length,
@@ -92,7 +92,7 @@ export default function DashboardPage() {
   }, []);
 
   const statCards = [
-    { label: "Total Leagues", value: stats?.totalLeagues || 0, icon: Trophy, gradient: "from-violet-500/15 to-indigo-500/15", iconColor: "text-violet-500" },
+    { label: "Total Clubs", value: stats?.totalClubs || 0, icon: Trophy, gradient: "from-violet-500/15 to-indigo-500/15", iconColor: "text-violet-500" },
     { label: "Total Matches", value: stats?.totalMatches || 0, icon: Calendar, gradient: "from-emerald-500/15 to-teal-500/15", iconColor: "text-emerald-500" },
     { label: "Live Now", value: stats?.liveMatches || 0, icon: Radio, gradient: "from-red-500/15 to-orange-500/15", iconColor: "text-red-500" },
     { label: "Upcoming", value: stats?.upcoming || 0, icon: TrendingUp, gradient: "from-blue-500/15 to-cyan-500/15", iconColor: "text-blue-500" },
@@ -106,7 +106,7 @@ export default function DashboardPage() {
           Welcome back, {user?.name?.split(" ")[0] || "Admin"} 👋
         </h1>
         <p className="text-muted-foreground text-sm mt-1">
-          Here's what's happening with your cricket leagues today.
+          Here's what's happening with your cricket clubs today.
         </p>
       </motion.div>
 

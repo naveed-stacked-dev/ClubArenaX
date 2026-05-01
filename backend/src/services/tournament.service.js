@@ -615,6 +615,235 @@ const updateTournament = async (id, data) => {
   return tournament;
 };
 
+// ─── BRACKET GRAPH (VISUAL BUILDER) ────────────────────────────────────────
+
+/**
+ * Get the bracket graph for the visual builder.
+ * Returns all matches with positions and edge data.
+ */
+const getBracketGraph = async (tournamentId) => {
+  const tournament = await Tournament.findById(tournamentId);
+  if (!tournament) throw ApiError.notFound('Tournament not found');
+
+  const matches = await Match.find({ tournamentId })
+    .sort({ createdAt: 1 })
+    .populate('teamA', 'name logo shortName color')
+    .populate('teamB', 'name logo shortName color')
+    .populate('result.winner', 'name logo shortName color');
+
+  // Build nodes (one per match)
+  const nodes = matches.map((m) => ({
+    id: m._id.toString(),
+    match: m,
+    position: {
+      x: m.tournamentMeta?.positionX ?? null,
+      y: m.tournamentMeta?.positionY ?? null,
+    },
+  }));
+
+  // Build edges (connections between matches)
+  const edges = [];
+  for (const m of matches) {
+    if (m.tournamentMeta?.nextMatchId) {
+      edges.push({
+        source: m._id.toString(),
+        target: m.tournamentMeta.nextMatchId.toString(),
+        slot: m.tournamentMeta.nextMatchSlot || 'A',
+      });
+    }
+  }
+
+  return { tournament: { _id: tournament._id, name: tournament.name, type: tournament.type }, nodes, edges };
+};
+
+/**
+ * Save the bracket graph from the visual builder.
+ * Validates structure, calculates rounds, and persists connections + positions.
+ *
+ * @param {string} tournamentId
+ * @param {Object} data
+ * @param {Array} data.edges - [{ source, target, slot }]
+ * @param {Array} data.positions - [{ id, x, y }]
+ */
+const saveBracketGraph = async (tournamentId, { edges = [], positions = [] }) => {
+  const tournament = await Tournament.findById(tournamentId);
+  if (!tournament) throw ApiError.notFound('Tournament not found');
+
+  const matches = await Match.find({ tournamentId });
+  const matchIds = new Set(matches.map((m) => m._id.toString()));
+
+  // Validate all edge references exist in this tournament
+  for (const edge of edges) {
+    if (!matchIds.has(edge.source)) throw ApiError.badRequest(`Invalid source match: ${edge.source}`);
+    if (!matchIds.has(edge.target)) throw ApiError.badRequest(`Invalid target match: ${edge.target}`);
+    if (edge.source === edge.target) throw ApiError.badRequest('A match cannot connect to itself');
+  }
+
+  // Validate max 2 inputs per match
+  const inputCounts = {};
+  for (const edge of edges) {
+    inputCounts[edge.target] = (inputCounts[edge.target] || 0) + 1;
+    if (inputCounts[edge.target] > 2) {
+      throw ApiError.badRequest(`Match cannot have more than 2 feeder matches`);
+    }
+  }
+
+  // Validate no cycles using topological sort (Kahn's algorithm)
+  const adjacency = {};    // source -> [targets]
+  const inDegree = {};
+  for (const id of matchIds) {
+    adjacency[id] = [];
+    inDegree[id] = 0;
+  }
+  for (const edge of edges) {
+    adjacency[edge.source].push(edge.target);
+    inDegree[edge.target] = (inDegree[edge.target] || 0) + 1;
+  }
+
+  const queue = [];
+  for (const id of matchIds) {
+    if ((inDegree[id] || 0) === 0) queue.push(id);
+  }
+
+  let visited = 0;
+  const topoOrder = [];
+  while (queue.length > 0) {
+    const node = queue.shift();
+    topoOrder.push(node);
+    visited++;
+    for (const neighbor of adjacency[node]) {
+      inDegree[neighbor]--;
+      if (inDegree[neighbor] === 0) queue.push(neighbor);
+    }
+  }
+
+  if (visited !== matchIds.size) {
+    throw ApiError.badRequest('Circular dependency detected in bracket structure');
+  }
+
+  // Calculate round numbers via BFS from leaf nodes (no incoming edges)
+  // Leaf nodes = Round 1, their targets = Round 2, etc.
+  const roundMap = {};
+  const reverseAdj = {}; // target -> [sources]
+  for (const id of matchIds) reverseAdj[id] = [];
+  for (const edge of edges) {
+    reverseAdj[edge.target].push(edge.source);
+  }
+
+  // BFS from leaves
+  const leafNodes = [...matchIds].filter((id) => reverseAdj[id].length === 0);
+  // Matches not in any edge at all get round 1
+  for (const id of matchIds) {
+    if (!edges.some((e) => e.source === id || e.target === id)) {
+      roundMap[id] = 1;
+    }
+  }
+  for (const leaf of leafNodes) {
+    roundMap[leaf] = 1;
+  }
+
+  // Forward pass: each node's round = max(round of all sources) + 1
+  for (const nodeId of topoOrder) {
+    const sources = reverseAdj[nodeId];
+    if (sources.length > 0) {
+      const maxSourceRound = Math.max(...sources.map((s) => roundMap[s] || 1));
+      roundMap[nodeId] = maxSourceRound + 1;
+    } else if (!roundMap[nodeId]) {
+      roundMap[nodeId] = 1;
+    }
+  }
+
+  // Find the final match (node with no outgoing edges in the edge list)
+  const hasOutgoing = new Set(edges.map((e) => e.source));
+  const finalMatches = [...matchIds].filter((id) => !hasOutgoing.has(id) && edges.some((e) => e.target === id));
+
+  // Build edge lookup: source -> { target, slot }
+  const edgeMap = {};
+  for (const edge of edges) {
+    edgeMap[edge.source] = { target: edge.target, slot: edge.slot || 'A' };
+  }
+
+  // Build position lookup
+  const posMap = {};
+  for (const pos of positions) {
+    posMap[pos.id] = { x: pos.x, y: pos.y };
+  }
+
+  // Assign slots: for each target, the first source = A, second = B
+  const targetSlots = {};
+  for (const edge of edges) {
+    if (!targetSlots[edge.target]) targetSlots[edge.target] = [];
+    targetSlots[edge.target].push(edge.source);
+  }
+
+  // Bulk update all matches
+  const bulkOps = [];
+  for (const id of matchIds) {
+    const edgeOut = edgeMap[id];
+    const pos = posMap[id];
+    const round = roundMap[id] || 1;
+    const isFinal = finalMatches.includes(id);
+    const isInGraph = edges.some((e) => e.source === id || e.target === id);
+
+    // Determine slot for this source in its target
+    let slot = null;
+    if (edgeOut) {
+      const siblings = targetSlots[edgeOut.target] || [];
+      const idx = siblings.indexOf(id);
+      slot = idx === 0 ? 'A' : 'B';
+    }
+
+    const update = {
+      'tournamentMeta.isKnockout': isInGraph ? true : false,
+      'tournamentMeta.roundNumber': isInGraph ? round : null,
+      'tournamentMeta.nextMatchId': edgeOut ? edgeOut.target : null,
+      'tournamentMeta.nextMatchSlot': slot,
+      'tournamentMeta.positionX': pos ? pos.x : null,
+      'tournamentMeta.positionY': pos ? pos.y : null,
+      round: isInGraph ? round : null,
+      isFinal: isFinal,
+    };
+
+    // Auto-assign matchOrder within the round
+    bulkOps.push({
+      updateOne: { 
+        filter: { _id: id }, 
+        update: { $set: update } 
+      },
+    });
+  }
+
+  if (bulkOps.length > 0) {
+    await Match.bulkWrite(bulkOps);
+  }
+
+  // Now assign matchOrder per round
+  const roundGroups = {};
+  for (const id of matchIds) {
+    const r = roundMap[id] || 1;
+    if (!roundGroups[r]) roundGroups[r] = [];
+    roundGroups[r].push(id);
+  }
+  const orderOps = [];
+  for (const [, ids] of Object.entries(roundGroups)) {
+    ids.forEach((id, idx) => {
+      orderOps.push({
+        updateOne: { 
+          filter: { _id: id }, 
+          update: { $set: { matchOrder: idx } } 
+        },
+      });
+    });
+  }
+  if (orderOps.length > 0) await Match.bulkWrite(orderOps);
+
+  // Update tournament matches array
+  tournament.matches = matches.map((m) => m._id);
+  await tournament.save();
+
+  return getBracketGraph(tournamentId);
+};
+
 module.exports = {
   createTournament,
   getAllTournaments,
@@ -626,4 +855,7 @@ module.exports = {
   updateTournament,
   submitMatchResult,
   getBracket,
+  getBracketGraph,
+  saveBracketGraph,
 };
+

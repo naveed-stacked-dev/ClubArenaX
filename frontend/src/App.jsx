@@ -8,8 +8,8 @@ import { ProtectedRoute, PublicRoute } from "./components/RouteGuards";
 import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import LeaguesPage from "./pages/LeaguesPage";
-import LeagueHubPage from "./pages/LeagueHubPage";
+import ClubsPage from "./pages/ClubsPage";
+import ClubHubPage from "./pages/ClubHubPage";
 import TournamentCenterPage from "./pages/TournamentCenterPage";
 import MatchCenterPage from "./pages/MatchCenterPage";
 import PlayerProfilePage from "./pages/PlayerProfilePage";
@@ -26,8 +26,8 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             
             {/* Public Pages */}
-            <Route path="/leagues" element={<LeaguesPage />} />
-            <Route path="/leagues/:slug" element={<LeagueHubPage />} />
+            <Route path="/clubs" element={<ClubsPage />} />
+            <Route path="/clubs/:slug" element={<ClubHubPage />} />
             <Route path="/tournaments/:id" element={<TournamentCenterPage />} />
             <Route path="/matches/:id" element={<MatchCenterPage />} />
             <Route path="/players/:id" element={<PlayerProfilePage />} />

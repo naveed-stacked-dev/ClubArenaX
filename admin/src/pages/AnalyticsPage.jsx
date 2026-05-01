@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAppContext } from "@/hooks/useAppContext";
-import leagueService from "@/services/leagueService";
+import clubService from "@/services/clubService";
 import analyticsService from "@/services/analyticsService";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -13,43 +13,43 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function AnalyticsPage() {
-  const { user } = useAppContext();
-  const [leagues, setLeagues] = useState([]);
-  const [selectedLeague, setSelectedLeague] = useState(null);
+  const { user, clubId: contextClubId } = useAppContext();
+  const [clubs, setClubs] = useState([]);
+  const [selectedClub, setSelectedClub] = useState(null);
   
   const [leaderboard, setLeaderboard] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [leagueLoading, setLeagueLoading] = useState(true);
+  const [clubLoading, setClubLoading] = useState(true);
 
   useEffect(() => {
     const fetch = async () => {
       try {
-        if (user?.role === "superAdmin") {
-          const res = await leagueService.adminGetAll();
-          const data = res.data?.data || res.data?.leagues || res.data || [];
-          setLeagues(Array.isArray(data) ? data : []);
-          if (data.length > 0) setSelectedLeague(data[0]._id || data[0].id);
+        if (user?.role === "superAdmin" || user?.role === "superadmin") {
+          const res = await clubService.adminGetAll();
+          const data = res.data?.data || res.data?.clubs || res.data || [];
+          setClubs(Array.isArray(data) ? data : []);
+          if (data.length > 0) setSelectedClub(data[0]._id || data[0].id);
         } else {
-          if (user?.leagueId) setSelectedLeague(user.leagueId);
+          if (contextClubId) setSelectedClub(contextClubId);
         }
       } catch { /* interceptor */ }
-      finally { setLeagueLoading(false); }
+      finally { setClubLoading(false); }
     };
     fetch();
-  }, [user]);
+  }, [user, contextClubId]);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
-      if (!selectedLeague) return;
+      if (!selectedClub) return;
       setLoading(true);
       try {
-        const res = await analyticsService.getLeaderboard(selectedLeague);
+        const res = await analyticsService.getLeaderboard(selectedClub);
         setLeaderboard(res.data?.data || res.data || null);
       } catch { /* interceptor */ }
       finally { setLoading(false); }
     };
     fetchAnalytics();
-  }, [selectedLeague]);
+  }, [selectedClub]);
 
   // Transform data for charts
   const topRunScorers = leaderboard?.topBatsmen?.slice(0, 5).map(p => ({
@@ -73,27 +73,27 @@ export default function AnalyticsPage() {
       <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><BarChart3 className="w-6 h-6 text-fuchsia-500" /> Analytics</h1>
-          <p className="text-sm text-muted-foreground mt-1">Deep dive into league statistics and performance metrics</p>
+          <p className="text-sm text-muted-foreground mt-1">Deep dive into club statistics and performance metrics</p>
         </div>
       </motion.div>
 
-      {user?.role === "superAdmin" && (
+      {(user?.role === "superAdmin" || user?.role === "superadmin") && (
         <motion.div variants={item} className="w-full max-w-xs">
-          <Select value={selectedLeague || ""} onValueChange={setSelectedLeague}>
+          <Select value={selectedClub || ""} onValueChange={setSelectedClub}>
             <SelectTrigger>
-              <SelectValue placeholder="Select a league" />
+              <SelectValue placeholder="Select a club" />
             </SelectTrigger>
             <SelectContent>
-              {leagues.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}
+              {clubs.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}
             </SelectContent>
           </Select>
         </motion.div>
       )}
 
-      {!selectedLeague && !leagueLoading ? (
+      {!selectedClub && !clubLoading ? (
         <div className="text-center py-16 text-muted-foreground">
           <Shield className="w-12 h-12 mx-auto mb-3 opacity-20" />
-          <p className="font-medium">Select a league to view analytics</p>
+          <p className="font-medium">Select a club to view analytics</p>
         </div>
       ) : loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

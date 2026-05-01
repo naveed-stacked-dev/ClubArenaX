@@ -7,7 +7,7 @@ const analyticsService = {
   getMatchGraph: (id) => apiClient.get(`/analytics/match/${id}/graph`),
   getTeamAnalytics: (id) => apiClient.get(`/analytics/team/${id}`),
   getHeadToHead: (id, opponentId) => apiClient.get(`/analytics/team/${id}/head-to-head/${opponentId}`),
-  getLeaderboard: (leagueId, params) => apiClient.get(`/analytics/leaderboard/${leagueId}`, { params }),
+  getLeaderboard: (clubId, params) => apiClient.get(`/analytics/leaderboard/${clubId}`, { params }),
 };
 
 export default analyticsService;

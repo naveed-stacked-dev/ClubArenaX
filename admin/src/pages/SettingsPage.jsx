@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAppContext } from "@/hooks/useAppContext";
-import leagueService from "@/services/leagueService";
+import clubService from "@/services/clubService";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,8 +15,8 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function SettingsPage() {
   const { user } = useAppContext();
-  const [leagues, setLeagues] = useState([]);
-  const [selectedLeague, setSelectedLeague] = useState(null);
+  const [clubs, setClubs] = useState([]);
+  const [selectedClub, setSelectedClub] = useState(null);
   
   const [submitting, setSubmitting] = useState(false);
   const [theme, setTheme] = useState({ primaryColor: "#4f46e5", secondaryColor: "#10b981", bannerUrl: "" });
@@ -24,12 +24,12 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const res = await leagueService.adminGetAll();
-        const data = res.data?.data || res.data?.leagues || res.data || [];
-        setLeagues(Array.isArray(data) ? data : []);
+        const res = await clubService.adminGetAll();
+        const data = res.data?.data || res.data?.clubs || res.data || [];
+        setClubs(Array.isArray(data) ? data : []);
         if (data.length > 0) {
           const l = data[0];
-          setSelectedLeague(l._id || l.id);
+          setSelectedClub(l._id || l.id);
           if (l.theme) {
             setTheme({
               primaryColor: l.theme.primaryColor || "#4f46e5",
@@ -45,9 +45,9 @@ export default function SettingsPage() {
     }
   }, [user]);
 
-  const handleLeagueChange = (id) => {
-    setSelectedLeague(id);
-    const l = leagues.find((lg) => (lg._id || lg.id) === id);
+  const handleClubChange = (id) => {
+    setSelectedClub(id);
+    const l = clubs.find((lg) => (lg._id || lg.id) === id);
     if (l && l.theme) {
       setTheme({
         primaryColor: l.theme.primaryColor || "#4f46e5",
@@ -60,11 +60,11 @@ export default function SettingsPage() {
   };
 
   const handleSave = async () => {
-    if (!selectedLeague) return;
+    if (!selectedClub) return;
     setSubmitting(true);
     try {
-      await leagueService.updateTheme(selectedLeague, { theme });
-      toast.success("League theme settings updated");
+      await clubService.updateTheme(selectedClub, { theme });
+      toast.success("Club theme settings updated");
     } catch { /* interceptor */ }
     finally { setSubmitting(false); }
   };
@@ -77,24 +77,24 @@ export default function SettingsPage() {
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6 max-w-2xl mx-auto">
       <motion.div variants={item}>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Settings className="w-6 h-6 text-slate-500" /> Platform Settings</h1>
-        <p className="text-sm text-muted-foreground mt-1">Configure global platform settings and league themes</p>
+        <p className="text-sm text-muted-foreground mt-1">Configure global platform settings and club themes</p>
       </motion.div>
 
       <motion.div variants={item}>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Paintbrush className="w-4 h-4 text-primary" /> League Theming</CardTitle>
-            <CardDescription>Customize the public frontend appearance for a specific league.</CardDescription>
+            <CardTitle className="flex items-center gap-2"><Paintbrush className="w-4 h-4 text-primary" /> Club Theming</CardTitle>
+            <CardDescription>Customize the public frontend appearance for a specific club.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label>Target League</Label>
-              <Select value={selectedLeague || ""} onValueChange={handleLeagueChange}>
+              <Label>Target Club</Label>
+              <Select value={selectedClub || ""} onValueChange={handleClubChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select a league to customize" />
+                  <SelectValue placeholder="Select a club to customize" />
                 </SelectTrigger>
                 <SelectContent>
-                  {leagues.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}
+                  {clubs.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -119,11 +119,11 @@ export default function SettingsPage() {
             <div className="space-y-2">
               <Label>Public Banner Image URL</Label>
               <Input placeholder="https://example.com/banner.jpg" value={theme.bannerUrl} onChange={(e) => setTheme({ ...theme, bannerUrl: e.target.value })} />
-              <p className="text-xs text-muted-foreground mt-1">This image will appear at the top of the public league hub page.</p>
+              <p className="text-xs text-muted-foreground mt-1">This image will appear at the top of the public club hub page.</p>
             </div>
 
             <div className="flex justify-end pt-4 border-t border-border">
-              <Button onClick={handleSave} disabled={submitting || !selectedLeague}>
+              <Button onClick={handleSave} disabled={submitting || !selectedClub}>
                 {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Save Theme Settings
               </Button>
             </div>

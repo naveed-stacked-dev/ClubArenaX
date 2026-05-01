@@ -3,7 +3,7 @@ import apiClient from "./apiClient";
 const matchService = {
   create: (data) => apiClient.post("/matches", data),
   getAll: (params) => apiClient.get("/matches", { params }),
-  getLive: (leagueId) => apiClient.get(`/matches/live/${leagueId}`),
+  getLive: (clubId) => apiClient.get(`/matches/live/${clubId}`),
   getByTournament: (tournamentId, params) => apiClient.get(`/matches/tournament/${tournamentId}`, { params }),
   getById: (id) => apiClient.get(`/matches/${id}`),
   update: (id, data) => apiClient.put(`/matches/${id}`, data),
