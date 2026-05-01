@@ -15,7 +15,8 @@ const getMatches = async (filter, { skip, limit }) => {
       .limit(limit)
       .populate('teamA', 'name logo')
       .populate('teamB', 'name logo')
-      .populate('tournamentId', 'name type'),
+      .populate('tournamentId', 'name type')
+      .populate('assignedManager', 'name email'),
     Match.countDocuments(filter),
   ]);
   return { matches, total };
@@ -89,7 +90,8 @@ const getMatchesByTournament = async (tournamentId, { skip, limit }) => {
       .skip(skip)
       .limit(limit)
       .populate('teamA', 'name logo')
-      .populate('teamB', 'name logo'),
+      .populate('teamB', 'name logo')
+      .populate('assignedManager', 'name email'),
     Match.countDocuments({ tournamentId }),
   ]);
   return { matches, total };
@@ -110,12 +112,26 @@ const deleteMatch = async (id) => {
 };
 
 const scheduleMatch = async (id, scheduleData) => {
-  const match = await Match.findByIdAndUpdate(
-    id,
-    { startTime: scheduleData.startTime, venue: scheduleData.venue, status: 'upcoming' },
-    { new: true, runValidators: true }
-  );
+  const match = await Match.findById(id);
   if (!match) throw ApiError.notFound('Match not found');
+
+  match.startTime = scheduleData.startTime;
+  if (scheduleData.venue !== undefined) {
+    match.venue = scheduleData.venue;
+  }
+  
+  if (scheduleData.action) {
+    match.rescheduleAction = scheduleData.action;
+    match.rescheduleReason = scheduleData.reason;
+  }
+
+  // If the match was live or completed, and we are rescheduling, we set it back to upcoming.
+  // The summary will naturally be preserved.
+  if (match.status !== 'completed' || scheduleData.action) {
+    match.status = 'upcoming';
+  }
+
+  await match.save();
   return match;
 };
 

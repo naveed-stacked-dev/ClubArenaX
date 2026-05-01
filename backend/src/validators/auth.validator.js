@@ -19,6 +19,10 @@ const loginSchema = Joi.object({
     .messages({ 'any.required': 'Password is required' }),
 });
 
+const matchManagerLoginSchema = loginSchema.keys({
+  token: Joi.string().uuid().allow(null, '').optional(),
+});
+
 // ─── ClubManager ─────────────────────────────────────────────────
 const registerClubManagerSchema = Joi.object({
   name: Joi.string().trim().min(2).max(100).required()
@@ -59,11 +63,6 @@ const refreshTokenSchema = Joi.object({
     .messages({ 'any.required': 'Refresh token is required' }),
 });
 
-const tokenLoginSchema = Joi.object({
-  token: Joi.string().uuid().required()
-    .messages({ 'any.required': 'Access token is required', 'string.guid': 'Invalid access token format' }),
-});
-
 // ─── Password Reset ──────────────────────────────────────────────
 const resetPasswordSchema = Joi.object({
   managerId: objectId.required()
@@ -81,14 +80,22 @@ const changePasswordSchema = Joi.object({
     .messages({ 'any.required': 'Please confirm your new password', 'any.only': 'Passwords do not match' }),
 });
 
+const updateProfileSchema = Joi.object({
+  name: Joi.string().trim().min(2).max(100).optional()
+    .messages({ 'string.min': 'Name must be at least 2 characters' }),
+  email: Joi.string().trim().lowercase().email().optional()
+    .messages({ 'string.email': 'Please enter a valid email address' }),
+});
+
 module.exports = {
   registerSuperAdminSchema,
   loginSchema,
+  matchManagerLoginSchema,
   registerClubManagerSchema,
   createMatchManagerSchema,
   registerUserSchema,
   refreshTokenSchema,
-  tokenLoginSchema,
   resetPasswordSchema,
   changePasswordSchema,
+  updateProfileSchema,
 };

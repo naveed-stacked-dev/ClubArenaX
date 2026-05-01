@@ -11,7 +11,10 @@ const ApiError = require('../utils/ApiError');
 const startMatch = async (matchId, tossData, performedBy) => {
   const match = await Match.findById(matchId);
   if (!match) throw ApiError.notFound('Match not found');
-  if (match.status === 'live') throw ApiError.conflict('Match is already live');
+  const existingSummary = await MatchSummary.findOne({ matchId });
+  if (match.status === 'live' && existingSummary) {
+    throw ApiError.conflict('Match is already live');
+  }
   if (match.status === 'completed') throw ApiError.conflict('Match is already completed');
 
   // Set toss info
@@ -74,7 +77,7 @@ const startMatch = async (matchId, tossData, performedBy) => {
 };
 
 /**
- * Resume a match after crash — fetch existing summary state.
+ * Resume a match after crash or postponement — fetch existing summary state.
  */
 const resumeMatch = async (matchId, performedBy) => {
   const match = await Match.findById(matchId);
@@ -82,6 +85,15 @@ const resumeMatch = async (matchId, performedBy) => {
 
   const summary = await MatchSummary.findOne({ matchId });
   if (!summary) throw ApiError.notFound('No match summary found — cannot resume');
+
+  // If resuming from a postponed state, make it live again
+  if (match.status === 'upcoming') {
+    match.status = 'live';
+    await match.save();
+    
+    summary.status = 'live';
+    await summary.save();
+  }
 
   await AuditLog.create({
     matchId,
@@ -869,8 +881,13 @@ async function recalculatePlayerStats(matchId) {
 const getScorecard = async (matchId) => {
   const summary = await MatchSummary.findOne({ matchId })
     .populate('matchId')
-    .populate('battingTeam', 'name logo')
-    .populate('bowlingTeam', 'name logo');
+    .populate('innings.first.battingTeamId', 'name logo')
+    .populate('innings.first.bowlingTeamId', 'name logo')
+    .populate('innings.second.battingTeamId', 'name logo')
+    .populate('innings.second.bowlingTeamId', 'name logo')
+    .populate('currentBatsmen.striker.playerId', 'name')
+    .populate('currentBatsmen.nonStriker.playerId', 'name')
+    .populate('currentBowler.playerId', 'name');
   if (!summary) throw ApiError.notFound('Match summary not found');
   return summary;
 };

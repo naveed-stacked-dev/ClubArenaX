@@ -24,12 +24,15 @@ const updateMatchSchema = Joi.object({
   matchNumber: Joi.number().integer().optional(),
   round: Joi.number().integer().optional(),
   matchLabel: Joi.string().trim().max(50).allow(null, '').optional(),
+  status: Joi.string().valid('unscheduled', 'upcoming', 'live', 'completed', 'abandoned').optional(),
 }).min(1).messages({ 'object.min': 'At least one field must be provided to update' });
 
 const scheduleMatchSchema = Joi.object({
   startTime: Joi.date().iso().required()
     .messages({ 'any.required': 'Start time is required', 'date.format': 'Please provide a valid date and time' }),
   venue: Joi.string().trim().max(200).allow(null, '').optional(),
+  action: Joi.string().valid('prepone', 'postpone').allow(null, '').optional(),
+  reason: Joi.string().trim().max(500).allow(null, '').optional(),
 });
 
 // ─── Scoring ─────────────────────────────────────────────────────

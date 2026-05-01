@@ -64,26 +64,15 @@ const createMatchManager = async (req, res, next) => {
   }
 };
 
-/**
- * Login MatchManager via token
- */
-const loginMatchManagerByToken = async (req, res, next) => {
-  try {
-    const { token } = req.body;
-    const result = await authService.loginMatchManagerByToken(token);
-    res.json(ApiResponse.ok(result, 'MatchManager authenticated via token'));
-  } catch (error) {
-    next(error);
-  }
-};
+// Removed loginMatchManagerByToken
 
 /**
  * Login MatchManager via email/password
  */
 const loginMatchManager = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-    const result = await authService.loginMatchManager(email, password);
+    const { email, password, token } = req.body;
+    const result = await authService.loginMatchManager(email, password, token);
     res.json(ApiResponse.ok(result, 'Login successful'));
   } catch (error) {
     next(error);
@@ -169,13 +158,24 @@ const changePassword = async (req, res, next) => {
   }
 };
 
+/**
+ * Update Profile
+ */
+const updateProfile = async (req, res, next) => {
+  try {
+    const result = await authService.updateProfile(req.userRole, req.user._id, req.body);
+    res.json(ApiResponse.ok(result, 'Profile updated successfully'));
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   registerSuperAdmin,
   loginSuperAdmin,
   registerClubManager,
   loginClubManager,
   createMatchManager,
-  loginMatchManagerByToken,
   loginMatchManager,
   registerUser,
   loginUser,
@@ -183,4 +183,5 @@ module.exports = {
   getMe,
   resetClubManagerPassword,
   changePassword,
+  updateProfile,
 };

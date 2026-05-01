@@ -5,6 +5,7 @@ const SuperAdmin = require('../models/SuperAdmin');
 const ClubManager = require('../models/ClubManager');
 const MatchManager = require('../models/MatchManager');
 const User = require('../models/User');
+const Match = require('../models/Match');
 const ApiError = require('../utils/ApiError');
 const { ROLES } = require('../utils/constants');
 const { v4: uuidv4 } = require('uuid');
@@ -12,6 +13,7 @@ const { v4: uuidv4 } = require('uuid');
 const MODEL_MAP = {
   [ROLES.SUPER_ADMIN]: SuperAdmin,
   [ROLES.CLUB_MANAGER]: ClubManager,
+  [ROLES.MATCH_MANAGER]: MatchManager,
   [ROLES.USER]: User,
 };
 
@@ -113,20 +115,7 @@ const refreshAccessToken = async (refreshToken) => {
   return tokens;
 };
 
-/**
- * Login a match manager via token-based access (no password).
- */
-const loginMatchManagerByToken = async (token) => {
-  const manager = await MatchManager.findOne({ token });
-  if (!manager) {
-    throw ApiError.unauthorized('Invalid match access token');
-  }
-
-  const tokens = generateTokens(manager._id, ROLES.MATCH_MANAGER);
-  const userObj = manager.toObject();
-  userObj.role = ROLES.MATCH_MANAGER;
-  return { user: userObj, ...tokens };
-};
+// Removed loginMatchManagerByToken
 
 /**
  * Create a match manager with a unique access token.
@@ -140,21 +129,49 @@ const createMatchManager = async (data) => {
     accessType: data.accessType || 'token',
   });
 
+  if (data.matchId) {
+    await Match.findByIdAndUpdate(
+      data.matchId,
+      { assignedManager: manager._id },
+      { new: true }
+    );
+  }
+
   return manager;
 };
 
 /**
  * Login a match manager via email/password.
  */
-const loginMatchManager = async (email, password) => {
-  const manager = await MatchManager.findOne({ email }).select('+password');
-  if (!manager || !manager.password) {
-    throw ApiError.unauthorized('Invalid credentials or token-only access');
+const loginMatchManager = async (email, password, token) => {
+  if (!token) {
+    throw ApiError.unauthorized('Access denied. Please use the Scorer Link provided by the administrator to log in.');
   }
 
-  const isMatch = await bcrypt.compare(password, manager.password);
+  // 1. Find the specific Match using the unique scorer token
+  const match = await Match.findOne({ scorerToken: token });
+  if (!match) {
+    throw ApiError.unauthorized('Invalid or expired scorer link token.');
+  }
+
+  if (!match.assignedManager) {
+    throw ApiError.unauthorized('No manager is assigned to this match.');
+  }
+
+  // 2. Find the MatchManager linked to this match, ensuring the email matches
+  const manager = await MatchManager.findOne({ 
+    _id: match.assignedManager,
+    email: email.toLowerCase().trim() 
+  }).select('+password');
+
+  if (!manager || !manager.password) {
+    throw ApiError.unauthorized('Invalid credentials or you are not authorized to score this match.');
+  }
+
+  // 3. Verify the password
+  const isMatch = await manager.comparePassword(password);
   if (!isMatch) {
-    throw ApiError.unauthorized('Invalid email or password');
+    throw ApiError.unauthorized('Invalid email or password.');
   }
 
   const tokens = generateTokens(manager._id, ROLES.MATCH_MANAGER);
@@ -198,14 +215,42 @@ const changePassword = async (role, userId, currentPassword, newPassword) => {
   await user.save();
 };
 
+/**
+ * Update authenticated user's profile
+ */
+const updateProfile = async (role, userId, data) => {
+  const Model = MODEL_MAP[role];
+  if (!Model) throw ApiError.badRequest('Invalid role for profile update');
+
+  const user = await Model.findById(userId);
+  if (!user) throw ApiError.notFound('User not found');
+
+  if (data.email && data.email !== user.email) {
+    const existing = await Model.findOne({ email: data.email });
+    if (existing) throw ApiError.conflict('Email already in use');
+    user.email = data.email;
+  }
+
+  if (data.name) user.name = data.name;
+  
+  await user.save();
+
+  const userObj = user.toObject();
+  delete userObj.password;
+  delete userObj.refreshToken;
+  userObj.role = role;
+
+  return userObj;
+};
+
 module.exports = {
   register,
   login,
   refreshAccessToken,
-  loginMatchManagerByToken,
   createMatchManager,
   loginMatchManager,
   generateTokens,
   resetClubManagerPassword,
   changePassword,
+  updateProfile,
 };

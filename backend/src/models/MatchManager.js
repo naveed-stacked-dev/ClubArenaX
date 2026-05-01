@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+const bcrypt = require('bcryptjs');
 const matchManagerSchema = new mongoose.Schema(
   {
     name: {
@@ -46,5 +46,16 @@ const matchManagerSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+matchManagerSchema.pre('save', async function (next) {
+  if (!this.isModified('password') || !this.password) return next();
+  this.password = await bcrypt.hash(this.password, 12);
+  next();
+});
+
+matchManagerSchema.methods.comparePassword = async function (candidatePassword) {
+  if (!this.password) return false;
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
 module.exports = mongoose.model('MatchManager', matchManagerSchema);

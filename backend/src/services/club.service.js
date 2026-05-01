@@ -67,10 +67,17 @@ const getClubBySlug = async (slug) => {
  * Get a single club by ID.
  */
 const getClubById = async (id) => {
-  const club = await Club.findById(id).populate('createdBy', 'name email');
+  const club = await Club.findById(id).populate('createdBy', 'name email').lean();
   if (!club) {
     throw ApiError.notFound('Club not found');
   }
+
+  const ClubManager = require('../models/ClubManager');
+  const manager = await ClubManager.findOne({ clubId: id }).select('name email');
+  if (manager) {
+    club.manager = manager;
+  }
+
   return club;
 };
 
@@ -114,7 +121,10 @@ const updateTheme = async (id, themeData, user, role) => {
   if (!club) throw ApiError.notFound('Club not found');
   checkClubAccess(club, user, role);
 
-  club.theme = { ...club.theme, ...themeData };
+  if (themeData.primaryColor) club.theme.primaryColor = themeData.primaryColor;
+  if (themeData.secondaryColor) club.theme.secondaryColor = themeData.secondaryColor;
+  if (themeData.bannerUrl !== undefined) club.theme.bannerUrl = themeData.bannerUrl;
+
   await club.save();
   return club;
 };

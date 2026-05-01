@@ -60,6 +60,15 @@ const matchSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    rescheduleAction: {
+      type: String,
+      enum: ['prepone', 'postpone', null],
+      default: null,
+    },
+    rescheduleReason: {
+      type: String,
+      default: null,
+    },
     result: {
       winner: { type: mongoose.Schema.Types.ObjectId, ref: 'Team' },
       margin: { type: String },
