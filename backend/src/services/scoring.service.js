@@ -11,11 +11,16 @@ const ApiError = require('../utils/ApiError');
 const startMatch = async (matchId, tossData, performedBy) => {
   const match = await Match.findById(matchId);
   if (!match) throw ApiError.notFound('Match not found');
-  const existingSummary = await MatchSummary.findOne({ matchId });
-  if (match.status === 'live' && existingSummary) {
-    throw ApiError.conflict('Match is already live');
-  }
   if (match.status === 'completed') throw ApiError.conflict('Match is already completed');
+
+  // CRITICAL: If a summary already exists (match was postponed mid-game),
+  // prevent re-initialisation. The caller should use /resume instead.
+  const existingSummary = await MatchSummary.findOne({ matchId });
+  if (existingSummary) {
+    throw ApiError.conflict(
+      'A match summary already exists. Use the Resume endpoint to continue scoring.'
+    );
+  }
 
   // Set toss info
   match.toss = {
@@ -78,19 +83,41 @@ const startMatch = async (matchId, tossData, performedBy) => {
 
 /**
  * Resume a match after crash or postponement — fetch existing summary state.
+ * CRITICAL: Always restores battingTeam, bowlingTeam, currentInning from the
+ * summary to prevent incorrect innings state after a mid-match reschedule.
  */
 const resumeMatch = async (matchId, performedBy) => {
   const match = await Match.findById(matchId);
   if (!match) throw ApiError.notFound('Match not found');
 
-  const summary = await MatchSummary.findOne({ matchId });
-  if (!summary) throw ApiError.notFound('No match summary found — cannot resume');
+  const summary = await MatchSummary.findOne({ matchId })
+    .populate('innings.first.battingTeamId', 'name')
+    .populate('innings.first.bowlingTeamId', 'name')
+    .populate('innings.second.battingTeamId', 'name')
+    .populate('innings.second.bowlingTeamId', 'name');
+  if (!summary) throw ApiError.notFound('No match summary found — cannot resume. Use Start Match instead.');
 
-  // If resuming from a postponed state, make it live again
-  if (match.status === 'upcoming') {
+  // Restore accurate match state from the summary's source of truth.
+  // This is the core fix for the "jumps to 2nd innings after postpone" bug.
+  const inningKey = summary.currentInning === 1 ? 'first' : 'second';
+  const activeInning = summary.innings[inningKey];
+
+  if (activeInning?.battingTeamId) {
+    // Store the raw ObjectId back (populate gives object; get _id)
+    const battingId = activeInning.battingTeamId._id || activeInning.battingTeamId;
+    const bowlingId = activeInning.bowlingTeamId?._id || activeInning.bowlingTeamId;
+    match.battingTeam = battingId;
+    match.bowlingTeam = bowlingId;
+  }
+  match.currentInning = summary.currentInning;
+
+  // Only change status if not already live (e.g. resuming from upcoming/abandoned)
+  if (match.status !== 'live') {
     match.status = 'live';
-    await match.save();
-    
+  }
+  await match.save();
+
+  if (summary.status !== 'live') {
     summary.status = 'live';
     await summary.save();
   }
@@ -99,7 +126,40 @@ const resumeMatch = async (matchId, performedBy) => {
     matchId,
     action: 'match_resumed',
     performedBy,
-    description: 'Match scoring resumed.',
+    description: `Match scoring resumed. Innings: ${summary.currentInning}. Status restored.`,
+  });
+
+  return { match, summary };
+};
+
+/**
+ * Pause a match (e.g. rain delay, mid-match interruption).
+ * Sets match back to 'upcoming' status while preserving ALL summary data.
+ * Resume must be used to continue — startMatch will be blocked.
+ */
+const pauseMatch = async (matchId, reason, performedBy) => {
+  const match = await Match.findById(matchId);
+  if (!match) throw ApiError.notFound('Match not found');
+  if (match.status !== 'live') throw ApiError.conflict('Match is not currently live');
+
+  const summary = await MatchSummary.findOne({ matchId });
+  if (!summary) throw ApiError.notFound('Match summary not found');
+
+  // Snapshot current innings state inside the match document before pausing
+  // so that resumeMatch can restore it perfectly.
+  match.status = 'upcoming';
+  // Preserve reschedule reason for display purposes
+  if (reason) {
+    match.rescheduleReason = reason;
+    match.rescheduleAction = 'postpone';
+  }
+  await match.save();
+
+  await AuditLog.create({
+    matchId,
+    action: 'match_paused',
+    performedBy,
+    description: `Match paused. Reason: ${reason || 'Not specified'}. Innings: ${summary.currentInning}.`,
   });
 
   return { match, summary };
@@ -885,6 +945,10 @@ const getScorecard = async (matchId) => {
     .populate('innings.first.bowlingTeamId', 'name logo')
     .populate('innings.second.battingTeamId', 'name logo')
     .populate('innings.second.bowlingTeamId', 'name logo')
+    .populate('innings.first.battingOrder.playerId', 'name jerseyNumber')
+    .populate('innings.first.bowlingFigures.playerId', 'name jerseyNumber')
+    .populate('innings.second.battingOrder.playerId', 'name jerseyNumber')
+    .populate('innings.second.bowlingFigures.playerId', 'name jerseyNumber')
     .populate('currentBatsmen.striker.playerId', 'name')
     .populate('currentBatsmen.nonStriker.playerId', 'name')
     .populate('currentBowler.playerId', 'name');
@@ -917,6 +981,7 @@ const getAuditLogs = async (matchId) => {
 module.exports = {
   startMatch,
   resumeMatch,
+  pauseMatch,
   addScore,
   addWicket,
   addExtra,

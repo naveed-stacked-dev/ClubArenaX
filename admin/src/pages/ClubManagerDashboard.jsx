@@ -10,6 +10,7 @@ import matchService from "@/services/matchService";
 import playerService from "@/services/playerService";
 import {
   Trophy, Users, Calendar, Radio, TrendingUp, UserCircle, Swords, Activity,
+  LayoutDashboard
 } from "lucide-react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -101,7 +102,11 @@ export default function ClubManagerDashboard() {
                 <h1 className="text-2xl font-bold text-white">{clubName || "My Club"}</h1>
                 <p className="text-white/70 text-sm">Welcome back, {user?.name?.split(" ")[0] || "Manager"} 👋</p>
               </div>
-              <div className="ml-auto flex items-center gap-2">
+              <div className="ml-auto flex flex-col items-end gap-2">
+                <div className="flex items-center gap-2">
+                  <LayoutDashboard className="w-4 h-4 text-white/50" />
+                  <span className="text-[10px] text-white/50 font-bold uppercase tracking-widest">Control Center</span>
+                </div>
                 {stats?.liveMatches > 0 && (
                   <Badge className="bg-red-500 text-white animate-pulse">
                     <Radio className="w-3 h-3 mr-1" /> {stats.liveMatches} Live
@@ -124,8 +129,11 @@ export default function ClubManagerDashboard() {
           const Icon = s.icon;
           return (
             <motion.div key={s.label} variants={item}>
-              <Card className="overflow-hidden relative group hover:shadow-md transition-shadow">
-                <div className={`absolute inset-0 bg-gradient-to-br ${s.gradient} opacity-50`} />
+              <Card className="overflow-hidden relative group hover:shadow-md transition-shadow border-0 shadow-sm">
+                <div 
+                  className="absolute inset-0 opacity-10 transition-opacity group-hover:opacity-20" 
+                  style={{ backgroundColor: themeColor }}
+                />
                 <CardContent className="relative p-5">
                   <div className="flex items-center justify-between">
                     <div>
@@ -136,7 +144,10 @@ export default function ClubManagerDashboard() {
                         <p className="text-3xl font-bold text-foreground mt-1">{s.value}</p>
                       )}
                     </div>
-                    <div className={`p-3 rounded-xl bg-background/80 ${s.iconColor}`}>
+                    <div 
+                      className="p-3 rounded-xl bg-background shadow-sm"
+                      style={{ color: themeColor }}
+                    >
                       <Icon className="w-5 h-5" />
                     </div>
                   </div>
@@ -159,7 +170,7 @@ export default function ClubManagerDashboard() {
             </CardHeader>
             <CardContent>
               <div className="h-[240px]">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <AreaChart data={matchTrend}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                     <XAxis dataKey="label" tick={{ fontSize: 12 }} stroke="hsl(var(--muted-foreground))" />
@@ -198,11 +209,14 @@ export default function ClubManagerDashboard() {
               ) : (
                 <div className="space-y-2">
                   {recentMatches.map((match) => (
-                    <div key={match._id || match.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors">
+                    <div key={match._id || match.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors border-l-4" style={{ borderLeftColor: match.status === 'live' ? '#ef4444' : themeColor }}>
                       <div className="text-sm font-medium text-foreground">
-                        {match.teamA?.name || "Team A"} vs {match.teamB?.name || "Team B"}
+                        {match.teamA?.name || "Team A"} <span className="text-muted-foreground font-normal mx-1">vs</span> {match.teamB?.name || "Team B"}
                       </div>
-                      <Badge variant={match.status === "live" ? "destructive" : match.status === "completed" ? "success" : "secondary"}>
+                      <Badge 
+                        variant={match.status === "live" ? "destructive" : match.status === "completed" ? "success" : "secondary"}
+                        style={match.status === "upcoming" || match.status === "scheduled" ? { backgroundColor: `${themeColor}20`, color: themeColor, borderColor: `${themeColor}40` } : {}}
+                      >
                         {match.status || "scheduled"}
                       </Badge>
                     </div>

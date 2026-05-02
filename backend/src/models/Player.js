@@ -15,8 +15,18 @@ const playerSchema = new mongoose.Schema(
     teamId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Team',
-      required: [true, 'Team ID is required'],
+      default: null,
       index: true,
+    },
+    jerseyNumber: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+    phone: {
+      type: String,
+      default: null,
+      trim: true,
     },
     clubId: {
       type: mongoose.Schema.Types.ObjectId,

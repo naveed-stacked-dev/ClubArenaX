@@ -82,18 +82,29 @@ export default function ProfilePage() {
       {/* Header Profile Section */}
       <div className="flex flex-col md:flex-row items-center gap-6 p-8 bg-card rounded-xl border border-border shadow-sm bg-gradient-to-br from-card to-muted/20">
         <Avatar className="h-24 w-24 border-4 border-background shadow-xl">
-          <AvatarFallback className="bg-gradient-to-br from-violet-600 to-indigo-600 text-white text-2xl font-bold">
+          <AvatarFallback 
+            className="text-white text-2xl font-bold"
+            style={{ background: `linear-gradient(135deg, ${themeColor}, ${themeColor}aa)` }}
+          >
             {initials}
           </AvatarFallback>
         </Avatar>
         <div className="flex-1 text-center md:text-left">
           <h1 className="text-3xl font-bold text-foreground tracking-tight">{user?.name}</h1>
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-3">
-            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 px-3 py-1">
+            <Badge 
+              variant="outline" 
+              className="px-3 py-1"
+              style={{ backgroundColor: `${themeColor}15`, color: themeColor, borderColor: `${themeColor}30` }}
+            >
               <Shield className="w-3.5 h-3.5 mr-1.5" /> {roleLabel}
             </Badge>
             {isClubManager && clubName && (
-              <Badge variant="outline" className="bg-indigo-500/10 text-indigo-500 border-indigo-500/20 px-3 py-1">
+              <Badge 
+                variant="outline" 
+                className="px-3 py-1"
+                style={{ backgroundColor: `${themeColor}15`, color: themeColor, borderColor: `${themeColor}30` }}
+              >
                 <Building className="w-3.5 h-3.5 mr-1.5" /> {clubName}
               </Badge>
             )}
@@ -106,11 +117,19 @@ export default function ProfilePage() {
 
       <Tabs defaultValue="general" className="w-full">
         <TabsList className={`grid w-full mb-8 bg-muted/50 p-1 rounded-xl ${isMatchManager ? 'grid-cols-1' : 'grid-cols-2'}`}>
-          <TabsTrigger value="general" className="flex items-center gap-2 py-3 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
+          <TabsTrigger 
+            value="general" 
+            className="flex items-center gap-2 py-3 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm"
+            style={{ '--theme-color': themeColor }}
+          >
             <User className="w-4 h-4" /> General Information
           </TabsTrigger>
           {!isMatchManager && (
-            <TabsTrigger value="security" className="flex items-center gap-2 py-3 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm">
+            <TabsTrigger 
+              value="security" 
+              className="flex items-center gap-2 py-3 rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm"
+              style={{ '--theme-color': themeColor }}
+            >
               <Lock className="w-4 h-4" /> Security
             </TabsTrigger>
           )}
@@ -159,7 +178,12 @@ export default function ProfilePage() {
                 </div>
                 {!isMatchManager && (
                   <div className="flex justify-end pt-4 border-t border-border/50">
-                    <Button type="submit" disabled={loading} className="h-11 px-8 bg-gradient-to-r from-violet-600 to-indigo-600 hover:opacity-90 transition-all shadow-md shadow-indigo-500/20">
+                    <Button 
+                      type="submit" 
+                      disabled={loading} 
+                      className="h-11 px-8 hover:opacity-90 transition-all shadow-md"
+                      style={{ backgroundColor: themeColor, color: '#fff', boxShadow: `0 4px 12px ${themeColor}40` }}
+                    >
                       {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Save Changes"}
                     </Button>
                   </div>

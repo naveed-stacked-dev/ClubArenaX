@@ -3,6 +3,7 @@ import apiClient from "./apiClient";
 const scoringService = {
   startMatch: (id, data) => apiClient.post(`/scoring/${id}/start`, data),
   resumeMatch: (id) => apiClient.post(`/scoring/${id}/resume`),
+  pauseMatch: (id, data) => apiClient.post(`/scoring/${id}/pause`, data),
   addScore: (id, data) => apiClient.post(`/scoring/${id}/score`, data),
   addWicket: (id, data) => apiClient.post(`/scoring/${id}/wicket`, data),
   addExtra: (id, data) => apiClient.post(`/scoring/${id}/extra`, data),

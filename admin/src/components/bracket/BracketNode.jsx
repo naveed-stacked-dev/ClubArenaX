@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useAppContext } from "@/hooks/useAppContext";
 
 const STATUS_STYLES = {
   completed: "border-emerald-500/40 shadow-emerald-500/10",
   live: "border-amber-500/60 shadow-amber-500/20 animate-pulse",
-  upcoming: "border-indigo-500/30 shadow-indigo-500/10",
+  upcoming: "",
   unscheduled: "border-border/50",
 };
 
@@ -58,6 +59,7 @@ function TeamCircle({ team, isWinner, isBye }) {
 }
 
 export default function BracketNode({ match, onClickMatch }) {
+  const { themeColor } = useAppContext();
   if (!match) return null;
 
   const winnerId = match.result?.winner?._id || match.result?.winner;
@@ -80,7 +82,11 @@ export default function BracketNode({ match, onClickMatch }) {
         "shadow-lg hover:shadow-xl",
         STATUS_STYLES[statusKey]
       )}
-      style={{ minWidth: 200 }}
+      style={{ 
+        minWidth: 200,
+        borderColor: statusKey === "upcoming" ? `${themeColor}40` : undefined,
+        boxShadow: statusKey === "upcoming" ? `0 4px 12px ${themeColor}10` : undefined
+      }}
     >
       {/* Match label */}
       <div className="absolute -top-2.5 left-3 px-2 py-0.5 rounded-full bg-background border border-border text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">

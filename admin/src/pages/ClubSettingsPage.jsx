@@ -75,7 +75,7 @@ export default function ClubSettingsPage() {
       {/* Header */}
       <motion.div variants={item}>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Settings className="w-6 h-6 text-violet-500" /> Club Settings
+          <Settings className="w-6 h-6" style={{ color: themeColor }} /> Club Settings
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
           Customize your club's branding, logo, and theme color
@@ -131,7 +131,7 @@ export default function ClubSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Palette className="w-4 h-4 text-violet-500" /> Dashboard Theme Color
+              <Palette className="w-4 h-4" style={{ color: themeColor }} /> Dashboard Theme Color
             </CardTitle>
             <CardDescription>Choose your club's primary accent color</CardDescription>
           </CardHeader>
@@ -231,7 +231,7 @@ export default function ClubSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <ImageIcon className="w-4 h-4 text-violet-500" /> Club Logo
+              <ImageIcon className="w-4 h-4" style={{ color: themeColor }} /> Club Logo
             </CardTitle>
             <CardDescription>Upload your club's logo (recommended: square, 512×512px)</CardDescription>
           </CardHeader>
@@ -255,7 +255,7 @@ export default function ClubSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <ImageIcon className="w-4 h-4 text-violet-500" /> Club Banner
+              <ImageIcon className="w-4 h-4" style={{ color: themeColor }} /> Club Banner
             </CardTitle>
             <CardDescription>Upload a cover banner for your club (recommended: 1200×400px)</CardDescription>
           </CardHeader>
@@ -275,7 +275,7 @@ export default function ClubSettingsPage() {
       </motion.div>
       {/* Save Button */}
       <motion.div variants={item} className="flex justify-end pt-4">
-        <Button onClick={handleSaveAll} disabled={savingTheme} size="lg" className="bg-gradient-to-r from-violet-600 to-indigo-600 text-white">
+        <Button onClick={handleSaveAll} disabled={savingTheme} size="lg" style={{ backgroundColor: themeColor, color: '#fff' }}>
           {savingTheme ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : <CheckCircle2 className="w-5 h-5 mr-2" />}
           Save All Settings
         </Button>

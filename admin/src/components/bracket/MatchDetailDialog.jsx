@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useAppContext } from "@/hooks/useAppContext";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,6 +10,7 @@ import { Loader2, Trophy, MapPin, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function MatchDetailDialog({ match, open, onClose, onSubmitResult, onSchedule, submitting }) {
+  const { themeColor } = useAppContext();
   const [winnerId, setWinnerId] = useState("");
   const [scheduleData, setScheduleData] = useState({ 
     startTime: match?.startTime ? new Date(match.startTime).toISOString().slice(0, 16) : "", 
@@ -51,7 +53,7 @@ export default function MatchDetailDialog({ match, open, onClose, onSubmitResult
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-amber-400" />
+            <Trophy className="w-5 h-5" style={{ color: themeColor }} />
             {match.matchLabel || (match.matchNumber ? `Match #${match.matchNumber}` : 'Match Details')}
           </DialogTitle>
           <DialogDescription>
@@ -104,7 +106,7 @@ export default function MatchDetailDialog({ match, open, onClose, onSubmitResult
                   {match.startTime ? 'Reschedule Match' : 'Schedule Match'}
                 </p>
                 {match.startTime && !isRescheduling && (
-                  <Button variant="ghost" size="sm" className="h-6 text-xs text-indigo-400 hover:text-indigo-300" onClick={() => setIsRescheduling(true)}>
+                  <Button variant="ghost" size="sm" className="h-6 text-xs hover:text-indigo-300" style={{ color: themeColor }} onClick={() => setIsRescheduling(true)}>
                     Edit Schedule
                   </Button>
                 )}
@@ -165,7 +167,8 @@ export default function MatchDetailDialog({ match, open, onClose, onSubmitResult
                     onClick={handleSchedule} 
                     disabled={submitting || !scheduleData.startTime || (match.startTime && (!scheduleData.action || !scheduleData.reason))} 
                     size="sm" 
-                    className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white mt-2"
+                    className="w-full text-white mt-2"
+                    style={{ backgroundColor: themeColor }}
                   >
                     {submitting && <Loader2 className="w-3 h-3 mr-1.5 animate-spin" />} {match.startTime ? 'Confirm Reschedule' : 'Schedule'}
                   </Button>

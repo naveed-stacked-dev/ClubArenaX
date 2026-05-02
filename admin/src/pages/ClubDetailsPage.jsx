@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAppContext } from "@/hooks/useAppContext";
 import clubService from "@/services/clubService";
+import { decodeId } from "@/utils/crypto";
 import { toast } from "sonner";
 import ImageUpload from "@/components/ImageUpload";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -32,7 +33,8 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function ClubDetailsPage() {
-  const { clubId } = useParams();
+  const params = useParams();
+  const clubId = decodeId(params.clubId);
   const navigate = useNavigate();
   const { user } = useAppContext();
   

@@ -21,7 +21,7 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function TeamsPage() {
-  const { user, clubId: contextClubId } = useAppContext();
+  const { user, clubId: contextClubId, themeColor } = useAppContext();
   const [clubs, setClubs] = useState([]);
   const [selectedClub, setSelectedClub] = useState(null);
   const [teams, setTeams] = useState([]);
@@ -159,11 +159,11 @@ export default function TeamsPage() {
       <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Users className="w-6 h-6 text-emerald-500" /> Teams
+            <Users className="w-6 h-6" style={{ color: themeColor }} /> Teams
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Manage team rosters within your clubs</p>
         </div>
-        <Button onClick={() => { setForm({ name: "", logoUrl: "" }); setShowCreate(true); }} disabled={!selectedClub} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:opacity-90">
+        <Button onClick={() => { setForm({ name: "", logoUrl: "" }); setShowCreate(true); }} disabled={!selectedClub} style={{ backgroundColor: themeColor, color: '#fff' }}>
           <Plus className="w-4 h-4 mr-2" /> Create Team
         </Button>
       </motion.div>
@@ -223,8 +223,8 @@ export default function TeamsPage() {
                     <TableRow key={team._id || team.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
-                            {team.logoUrl ? <img src={team.logoUrl} alt="" className="w-6 h-6 rounded object-cover" /> : <Shield className="w-4 h-4 text-emerald-500" />}
+                          <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor}20` }}>
+                            {team.logoUrl ? <img src={team.logoUrl} alt="" className="w-6 h-6 rounded object-cover" /> : <Shield className="w-4 h-4" style={{ color: themeColor }} />}
                           </div>
                           <span className="font-medium">{team.name}</span>
                         </div>
@@ -278,7 +278,7 @@ export default function TeamsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={submitting} className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create</Button>
+            <Button onClick={handleCreate} disabled={submitting} style={{ backgroundColor: themeColor, color: '#fff' }}>{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -321,7 +321,7 @@ export default function TeamsPage() {
       <Dialog open={showRoster} onOpenChange={setShowRoster}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2"><Users className="w-5 h-5 text-emerald-500" /> {selected?.name} — Roster</DialogTitle>
+            <DialogTitle className="flex items-center gap-2"><Users className="w-5 h-5" style={{ color: themeColor }} /> {selected?.name} — Roster</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             {rosterLoading ? (
@@ -333,7 +333,7 @@ export default function TeamsPage() {
                 {roster.map((p) => (
                   <div key={p._id || p.id} className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/30">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center text-xs font-bold text-emerald-600">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: `${themeColor}20`, color: themeColor }}>
                         {(p.name || "?")[0]}
                       </div>
                       <div>

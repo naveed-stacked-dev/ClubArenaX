@@ -34,7 +34,8 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const { user, isClubManager, clubName, clubLogo, themeColor } = useAppContext();
+  const { user, isClubManager, isMatchManager, clubName, clubLogo, themeColor } = useAppContext();
+  const isClubOrMatchManager = isClubManager || isMatchManager;
   const location = useLocation();
 
   const visibleItems = NAV_ITEMS.filter(
@@ -49,7 +50,7 @@ export default function Sidebar() {
     >
       {/* Logo / Club Branding */}
       <div className="h-16 flex items-center gap-3 px-4 border-b border-sidebar-border">
-        {isClubManager && clubLogo ? (
+        {isClubOrMatchManager && clubLogo ? (
           <div
             className="flex items-center justify-center w-9 h-9 rounded-lg shadow-sm shrink-0 overflow-hidden"
             style={{ backgroundColor: `${themeColor}20` }}
@@ -60,11 +61,11 @@ export default function Sidebar() {
           <div
             className="flex items-center justify-center w-9 h-9 rounded-lg shadow-sm shrink-0"
             style={{
-              background: isClubManager && themeColor
+              background: isClubOrMatchManager && themeColor
                 ? `linear-gradient(135deg, ${themeColor}, ${themeColor}aa)`
                 : undefined,
             }}
-            {...(!isClubManager ? { className: "flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 shadow-sm shrink-0" } : {})}
+            {...(!isClubOrMatchManager ? { className: "flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 shadow-sm shrink-0" } : {})}
           >
             <span className="text-base">🏏</span>
           </div>
@@ -77,7 +78,7 @@ export default function Sidebar() {
               exit={{ opacity: 0, x: -10 }}
               className="font-bold text-sidebar-foreground text-sm whitespace-nowrap truncate"
             >
-              {isClubManager && clubName ? clubName : "ClubArenaX"}
+              {isClubOrMatchManager && clubName ? clubName : "ClubArenaX"}
             </motion.span>
           )}
         </AnimatePresence>
@@ -107,15 +108,15 @@ export default function Sidebar() {
                   layoutId="sidebar-indicator"
                   className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full"
                   style={{
-                    backgroundColor: isClubManager && themeColor ? themeColor : undefined,
+                    backgroundColor: isClubOrMatchManager && themeColor ? themeColor : undefined,
                   }}
-                  {...(!isClubManager || !themeColor ? { className: "absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" } : {})}
+                  {...(!isClubOrMatchManager || !themeColor ? { className: "absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-sidebar-primary" } : {})}
                   transition={{ type: "spring", stiffness: 500, damping: 35 }}
                 />
               )}
               <Icon
-                className={cn("w-5 h-5 shrink-0", isActive && !isClubManager && "text-sidebar-primary")}
-                style={isActive && isClubManager && themeColor ? { color: themeColor } : undefined}
+                className={cn("w-5 h-5 shrink-0", isActive && !isClubOrMatchManager && "text-sidebar-primary")}
+                style={isActive && isClubOrMatchManager && themeColor ? { color: themeColor } : undefined}
               />
               <AnimatePresence>
                 {!collapsed && (

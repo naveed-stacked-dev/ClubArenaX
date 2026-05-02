@@ -5,6 +5,7 @@ import { useAppContext } from "@/hooks/useAppContext";
 import clubService from "@/services/clubService";
 import authService from "@/services/authService";
 import { toast } from "sonner";
+import { encodeId } from "@/utils/crypto";
 import ImageUpload from "@/components/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -240,7 +241,7 @@ export default function ClubsPage() {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="border-b transition-colors hover:bg-muted/50 cursor-pointer"
-                        onClick={() => navigate(`/clubs/${club._id || club.id}`)}
+                        onClick={() => navigate(`/clubs/${encodeId(club._id || club.id)}`)}
                       >
                         <TableCell>
                           <div className="flex items-center gap-3">
@@ -278,7 +279,7 @@ export default function ClubsPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => navigate(`/clubs/${club._id || club.id}`)}>
+                              <DropdownMenuItem onClick={() => navigate(`/clubs/${encodeId(club._id || club.id)}`)}>
                                 <Settings className="w-4 h-4 mr-2 text-violet-500" /> Manage Details
                               </DropdownMenuItem>
                               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); openEdit(club); }}>

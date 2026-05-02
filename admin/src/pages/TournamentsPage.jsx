@@ -24,7 +24,7 @@ const FORMATS = ["league", "knockout"];
 const STATUSES = ["draft", "upcoming", "ongoing", "completed", "cancelled"];
 
 export default function TournamentsPage() {
-  const { user, clubId: contextClubId } = useAppContext();
+  const { user, clubId: contextClubId, themeColor } = useAppContext();
   const [clubs, setClubs] = useState([]);
   const [selectedClub, setSelectedClub] = useState(null);
   const [tournaments, setTournaments] = useState([]);
@@ -157,10 +157,10 @@ export default function TournamentsPage() {
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Swords className="w-6 h-6 text-amber-500" /> Tournaments</h1>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Swords className="w-6 h-6" style={{ color: themeColor }} /> Tournaments</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage tournaments, formats, and fixtures</p>
         </div>
-        <Button onClick={() => { setForm({ name: "", type: "league", startDate: "", endDate: "", settings: { oversPerInning: 20 }, teams: [] }); setShowCreate(true); }} disabled={!selectedClub || selectedClub === "all"} className="bg-gradient-to-r from-amber-500 to-orange-600 text-white hover:opacity-90">
+        <Button onClick={() => { setForm({ name: "", type: "league", startDate: "", endDate: "", settings: { oversPerInning: 20 }, teams: [] }); setShowCreate(true); }} disabled={!selectedClub || selectedClub === "all"} style={{ backgroundColor: themeColor, color: '#fff' }}>
           <Plus className="w-4 h-4 mr-2" /> Create Tournament
         </Button>
       </motion.div>
@@ -206,8 +206,8 @@ export default function TournamentsPage() {
                     <TableRow key={t._id || t.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
-                            <Swords className="w-4 h-4 text-amber-500" />
+                          <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${themeColor}20` }}>
+                            <Swords className="w-4 h-4" style={{ color: themeColor }} />
                           </div>
                           <span className="font-medium text-sm">{t.name}</span>
                         </div>
@@ -282,7 +282,7 @@ export default function TournamentsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={submitting} className="bg-gradient-to-r from-amber-500 to-orange-600 text-white">{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create</Button>
+            <Button onClick={handleCreate} disabled={submitting} style={{ backgroundColor: themeColor, color: '#fff' }}>{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -341,7 +341,7 @@ export default function TournamentsPage() {
       {/* Points Table Dialog */}
       <Dialog open={showPointsTable} onOpenChange={setShowPointsTable}>
         <DialogContent className="max-w-3xl">
-          <DialogHeader><DialogTitle className="flex items-center gap-2"><ListOrdered className="w-5 h-5 text-amber-500" /> {selected?.name} — Points Table</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="flex items-center gap-2"><ListOrdered className="w-5 h-5" style={{ color: themeColor }} /> {selected?.name} — Points Table</DialogTitle></DialogHeader>
           {pointsLoading ? (
              <div className="space-y-3 py-4">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full" />)}</div>
           ) : pointsTable.length === 0 ? (
@@ -370,7 +370,7 @@ export default function TournamentsPage() {
                     <TableCell className="text-center text-destructive">{row.lost || 0}</TableCell>
                     <TableCell className="text-center">{row.noResult || 0}</TableCell>
                     <TableCell className="text-center font-mono text-xs">{row.nrr ? row.nrr.toFixed(3) : "0.000"}</TableCell>
-                    <TableCell className="text-right font-bold text-amber-500">{row.points || 0}</TableCell>
+                    <TableCell className="text-right font-bold" style={{ color: themeColor }}>{row.points || 0}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

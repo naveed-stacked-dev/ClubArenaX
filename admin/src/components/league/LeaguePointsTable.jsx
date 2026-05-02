@@ -3,8 +3,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Trophy, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAppContext } from "@/hooks/useAppContext";
 
 export default function LeaguePointsTable({ matches, teams }) {
+  const { themeColor } = useAppContext();
   // Calculate points table from raw matches
   const pointsTable = useMemo(() => {
     if (!teams || teams.length === 0) return [];
@@ -124,7 +126,7 @@ export default function LeaguePointsTable({ matches, teams }) {
               <TableCell className="text-center text-red-400 font-medium">{row.lost}</TableCell>
               <TableCell className="text-center text-muted-foreground">{row.tied}</TableCell>
               <TableCell className="text-center font-mono text-xs">{row.nrr > 0 ? `+${row.nrr.toFixed(3)}` : row.nrr.toFixed(3)}</TableCell>
-              <TableCell className="text-center font-bold text-lg text-indigo-400 bg-indigo-500/5">{row.points}</TableCell>
+              <TableCell className="text-center font-bold text-lg" style={{ color: themeColor, backgroundColor: `${themeColor}05` }}>{row.points}</TableCell>
               <TableCell>
                 <div className="flex items-center justify-center gap-1">
                   {row.form.length === 0 ? (

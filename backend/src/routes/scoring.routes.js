@@ -9,6 +9,7 @@ const matchValidators = require('../validators/match.validator');
 // All scoring routes require match manager or higher auth
 router.post('/:id/start', authenticateMatchToken, anyManager, validate(matchValidators.startMatchSchema), scoringController.startMatch);
 router.post('/:id/resume', authenticateMatchToken, anyManager, scoringController.resumeMatch);
+router.post('/:id/pause', authenticateMatchToken, anyManager, scoringController.pauseMatch);
 router.post('/:id/score', authenticateMatchToken, anyManager, validate(matchValidators.addScoreSchema), scoringController.addScore);
 router.post('/:id/wicket', authenticateMatchToken, anyManager, validate(matchValidators.addWicketSchema), scoringController.addWicket);
 router.post('/:id/extra', authenticateMatchToken, anyManager, validate(matchValidators.addExtraSchema), scoringController.addExtra);

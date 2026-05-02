@@ -3,8 +3,10 @@ import { motion } from "framer-motion";
 import { Calendar, MapPin, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useAppContext } from "@/hooks/useAppContext";
 
 export default function LeagueFixtures({ matches }) {
+  const { themeColor } = useAppContext();
   if (!matches || matches.length === 0) {
     return (
       <div className="text-center py-16 text-muted-foreground">
@@ -26,7 +28,7 @@ export default function LeagueFixtures({ matches }) {
         let statusBadge = <Badge variant="outline" className="text-muted-foreground bg-background">Unscheduled</Badge>;
         if (match.status === 'completed') statusBadge = <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Completed</Badge>;
         if (match.status === 'live') statusBadge = <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 animate-pulse">Live Now</Badge>;
-        if (match.status === 'upcoming') statusBadge = <Badge className="bg-indigo-500/20 text-indigo-400 border-indigo-500/30">Upcoming</Badge>;
+        if (match.status === 'upcoming') statusBadge = <Badge style={{ backgroundColor: `${themeColor}20`, color: themeColor, borderColor: `${themeColor}30` }}>Upcoming</Badge>;
 
         return (
           <motion.div variants={item} key={match._id || match.id}>

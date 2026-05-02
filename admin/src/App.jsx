@@ -12,6 +12,7 @@ import TeamsPage from "@/pages/TeamsPage";
 import PlayersPage from "@/pages/PlayersPage";
 import TournamentsPage from "@/pages/TournamentsPage";
 import MatchesPage from "@/pages/MatchesPage";
+import MatchSummaryPage from "@/pages/MatchSummaryPage";
 import MatchSchedulingPage from "@/pages/MatchSchedulingPage";
 import LiveScoringPage from "@/pages/LiveScoringPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
@@ -79,6 +80,9 @@ export default function App() {
         } />
         <Route path="matches" element={
           <ProtectedRoute allowedRoles={MANAGER_ROLES}><MatchesPage /></ProtectedRoute>
+        } />
+        <Route path="match/:matchId/match-summary" element={
+          <ProtectedRoute allowedRoles={MANAGER_ROLES}><MatchSummaryPage /></ProtectedRoute>
         } />
         <Route path="match-scheduling" element={
           <ProtectedRoute allowedRoles={MANAGER_ROLES}><MatchSchedulingPage /></ProtectedRoute>

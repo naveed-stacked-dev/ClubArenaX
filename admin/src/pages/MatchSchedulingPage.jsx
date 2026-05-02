@@ -34,7 +34,7 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function MatchSchedulingPage() {
-  const { user, clubId: contextClubId } = useAppContext();
+  const { user, clubId: contextClubId, themeColor } = useAppContext();
   const isSuperAdmin = user?.role === "superAdmin" || user?.role === "superadmin";
 
   // ─── State ───
@@ -248,14 +248,14 @@ export default function MatchSchedulingPage() {
       <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Swords className="w-6 h-6 text-indigo-500" /> Match Scheduling
+            <Swords className="w-6 h-6" style={{ color: themeColor }} /> Match Scheduling
           </h1>
           <p className="text-sm text-muted-foreground mt-1">Schedule, visualize, and manage tournament matches</p>
         </div>
         <Button
           onClick={() => { setForm({ teamA: "", teamB: "", venue: "", startTime: "", overs: "20" }); setShowCreate(true); }}
           disabled={!selectedClub || !selectedTournament}
-          className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-90"
+          style={{ backgroundColor: themeColor, color: '#fff' }}
         >
           <Plus className="w-4 h-4 mr-2" /> Add Match
         </Button>
@@ -300,37 +300,73 @@ export default function MatchSchedulingPage() {
         <motion.div variants={item}>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="bg-card/60 backdrop-blur-sm border border-border mb-4">
-              <TabsTrigger value="table" className="flex items-center gap-1.5 data-[state=active]:bg-indigo-500/20 data-[state=active]:text-indigo-400">
+              <TabsTrigger 
+                value="table" 
+                className="flex items-center gap-1.5"
+                style={activeTab === 'table' ? { backgroundColor: `${themeColor}20`, color: themeColor } : {}}
+              >
                 <Calendar className="w-3.5 h-3.5" /> Schedule Table
               </TabsTrigger>
               {isKnockout && (
                 <>
-                  <TabsTrigger value="builder" className="flex items-center gap-1.5 data-[state=active]:bg-cyan-500/20 data-[state=active]:text-cyan-400">
+                  <TabsTrigger 
+                    value="builder" 
+                    className="flex items-center gap-1.5"
+                    style={activeTab === 'builder' ? { backgroundColor: `${themeColor}20`, color: themeColor } : {}}
+                  >
                     <Link2 className="w-3.5 h-3.5" /> Build Bracket
                   </TabsTrigger>
-                  <TabsTrigger value="bracket" className="flex items-center gap-1.5 data-[state=active]:bg-purple-500/20 data-[state=active]:text-purple-400">
+                  <TabsTrigger 
+                    value="bracket" 
+                    className="flex items-center gap-1.5"
+                    style={activeTab === 'bracket' ? { backgroundColor: `${themeColor}20`, color: themeColor } : {}}
+                  >
                     <GitBranch className="w-3.5 h-3.5" /> Bracket
                   </TabsTrigger>
-                  <TabsTrigger value="progression" className="flex items-center gap-1.5 data-[state=active]:bg-pink-500/20 data-[state=active]:text-pink-400">
+                  <TabsTrigger 
+                    value="progression" 
+                    className="flex items-center gap-1.5"
+                    style={activeTab === 'progression' ? { backgroundColor: `${themeColor}20`, color: themeColor } : {}}
+                  >
                     <Activity className="w-3.5 h-3.5" /> Progression
                   </TabsTrigger>
-                  <TabsTrigger value="knockout-timeline" className="flex items-center gap-1.5 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400">
+                  <TabsTrigger 
+                    value="knockout-timeline" 
+                    className="flex items-center gap-1.5"
+                    style={activeTab === 'knockout-timeline' ? { backgroundColor: `${themeColor}20`, color: themeColor } : {}}
+                  >
                     <Clock className="w-3.5 h-3.5" /> Timeline
                   </TabsTrigger>
                 </>
               )}
               {isLeague && (
                 <>
-                  <TabsTrigger value="league-points" className="flex items-center gap-1.5 data-[state=active]:bg-yellow-500/20 data-[state=active]:text-yellow-400">
+                  <TabsTrigger 
+                    value="league-points" 
+                    className="flex items-center gap-1.5"
+                    style={activeTab === 'league-points' ? { backgroundColor: `${themeColor}20`, color: themeColor } : {}}
+                  >
                     <TableProperties className="w-3.5 h-3.5" /> Points Table
                   </TabsTrigger>
-                  <TabsTrigger value="league-network" className="flex items-center gap-1.5 data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-400">
+                  <TabsTrigger 
+                    value="league-network" 
+                    className="flex items-center gap-1.5"
+                    style={activeTab === 'league-network' ? { backgroundColor: `${themeColor}20`, color: themeColor } : {}}
+                  >
                     <Network className="w-3.5 h-3.5" /> Network Graph
                   </TabsTrigger>
-                  <TabsTrigger value="league-fixtures" className="flex items-center gap-1.5 data-[state=active]:bg-green-500/20 data-[state=active]:text-green-400">
+                  <TabsTrigger 
+                    value="league-fixtures" 
+                    className="flex items-center gap-1.5"
+                    style={activeTab === 'league-fixtures' ? { backgroundColor: `${themeColor}20`, color: themeColor } : {}}
+                  >
                     <KanbanSquare className="w-3.5 h-3.5" /> Fixtures
                   </TabsTrigger>
-                  <TabsTrigger value="league-timeline" className="flex items-center gap-1.5 data-[state=active]:bg-orange-500/20 data-[state=active]:text-orange-400">
+                  <TabsTrigger 
+                    value="league-timeline" 
+                    className="flex items-center gap-1.5"
+                    style={activeTab === 'league-timeline' ? { backgroundColor: `${themeColor}20`, color: themeColor } : {}}
+                  >
                     <Clock className="w-3.5 h-3.5" /> Timeline
                   </TabsTrigger>
                 </>
@@ -350,19 +386,19 @@ export default function MatchSchedulingPage() {
                     </div>
                   ) : (
                     <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>#</TableHead>
-                          <TableHead>Label</TableHead>
-                          <TableHead>Team 1</TableHead>
-                          <TableHead>Team 2</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Day</TableHead>
-                          <TableHead>Time</TableHead>
-                          <TableHead>Venue</TableHead>
-                          <TableHead>Winner</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead className="w-12">Actions</TableHead>
+                      <TableHeader style={{ backgroundColor: `${themeColor}10` }}>
+                        <TableRow className="hover:bg-transparent">
+                          <TableHead style={{ color: themeColor }}>#</TableHead>
+                          <TableHead style={{ color: themeColor }}>Label</TableHead>
+                          <TableHead style={{ color: themeColor }}>Team 1</TableHead>
+                          <TableHead style={{ color: themeColor }}>Team 2</TableHead>
+                          <TableHead style={{ color: themeColor }}>Date</TableHead>
+                          <TableHead style={{ color: themeColor }}>Day</TableHead>
+                          <TableHead style={{ color: themeColor }}>Time</TableHead>
+                          <TableHead style={{ color: themeColor }}>Venue</TableHead>
+                          <TableHead style={{ color: themeColor }}>Winner</TableHead>
+                          <TableHead style={{ color: themeColor }}>Status</TableHead>
+                          <TableHead className="w-12"></TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -374,7 +410,11 @@ export default function MatchSchedulingPage() {
                             <TableRow key={m._id || m.id} className="group hover:bg-card/80 transition-colors">
                               <TableCell className="font-mono text-xs text-muted-foreground">{m.matchNumber || idx + 1}</TableCell>
                               <TableCell>
-                                <Badge variant="outline" className="text-[10px] uppercase tracking-wider font-bold border-indigo-500/30 text-indigo-400">
+                                <Badge 
+                                  variant="outline" 
+                                  className="text-[10px] uppercase tracking-wider font-bold"
+                                  style={{ borderColor: `${themeColor}40`, color: themeColor, backgroundColor: `${themeColor}15` }}
+                                >
                                   {m.matchLabel || "—"}
                                 </Badge>
                               </TableCell>
@@ -427,7 +467,7 @@ export default function MatchSchedulingPage() {
                 <Card className="overflow-hidden">
                   <CardContent className="p-2">
                     {loading ? (
-                      <div className="p-10 text-center"><Loader2 className="w-8 h-8 mx-auto animate-spin text-indigo-400" /></div>
+                      <div className="p-10 text-center"><Loader2 className="w-8 h-8 mx-auto animate-spin" style={{ color: themeColor }} /></div>
                     ) : bracketData?.matches?.length > 0 ? (
                       <BracketTree
                         matches={bracketData.matches}
@@ -525,7 +565,7 @@ export default function MatchSchedulingPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={submitting} className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create</Button>
+            <Button onClick={handleCreate} disabled={submitting} style={{ backgroundColor: themeColor, color: '#fff' }}>{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

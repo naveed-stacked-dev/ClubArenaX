@@ -6,6 +6,7 @@ import tournamentService from "@/services/tournamentService";
 import teamService from "@/services/teamService";
 import clubService from "@/services/clubService";
 import authService from "@/services/authService";
+import scoringService from "@/services/scoringService";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,12 +21,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar, Plus, MoreHorizontal, Pencil, KeyRound, Loader2, Search, Link as LinkIcon, PlayCircle, Shield } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { encodeId } from "@/utils/crypto";
 
 const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.05 } } };
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 
 export default function MatchesPage() {
-  const { user, clubId: contextClubId } = useAppContext();
+  const { user, clubId: contextClubId, themeColor } = useAppContext();
   const navigate = useNavigate();
   const [clubs, setClubs] = useState([]);
   const [selectedClub, setSelectedClub] = useState(null);
@@ -160,17 +162,41 @@ export default function MatchesPage() {
     let status = m.status;
 
     if (status === "live") return <Badge variant="destructive" className="animate-pulse">LIVE</Badge>;
-    if (status === "completed") return <Badge variant="success">Completed</Badge>;
-    if (status === "upcoming") return <Badge className="bg-indigo-500/20 text-indigo-400 border-indigo-500/30">Upcoming</Badge>;
+    if (status === "completed") return (
+      <Badge 
+        variant="outline"
+        className="font-semibold"
+        style={{ backgroundColor: `${themeColor}10`, color: themeColor, borderColor: `${themeColor}30` }}
+      >
+        Completed
+      </Badge>
+    );
+    if (status === "upcoming") return (
+      <Badge 
+        variant="outline" 
+        className="font-semibold" 
+        style={{ borderColor: `${themeColor}40`, color: themeColor, backgroundColor: `${themeColor}15` }}
+      >
+        Upcoming
+      </Badge>
+    );
     if (status === "unscheduled") return <Badge variant="outline" className="text-muted-foreground">Unscheduled</Badge>;
-    return <Badge variant="secondary">{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>;
+    return (
+      <Badge 
+        variant="outline"
+        className="font-semibold"
+        style={{ backgroundColor: `${themeColor}05`, color: themeColor, borderColor: `${themeColor}20` }}
+      >
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    );
   };
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Calendar className="w-6 h-6 text-indigo-500" /> Matches</h1>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><Calendar className="w-6 h-6" style={{ color: themeColor }} /> Matches</h1>
           <p className="text-sm text-muted-foreground mt-1">Schedule matches and assign scorers</p>
         </div>
         {/* <Button onClick={() => { setForm({ teamA: "", teamB: "", tournament: selectedTournament === "all" ? "" : selectedTournament, venue: "", startTime: "", overs: "20" }); setShowCreate(true); }} disabled={!selectedClub} className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:opacity-90">
@@ -209,18 +235,23 @@ export default function MatchesPage() {
               <div className="text-center py-16 text-muted-foreground"><Calendar className="w-12 h-12 mx-auto mb-3 opacity-20" /><p className="font-medium">No matches found</p></div>
             ) : (
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Match</TableHead>
-                    <TableHead>Match Manager</TableHead>
-                    <TableHead>Date / Venue</TableHead>
-                    <TableHead>Status</TableHead>
+                <TableHeader style={{ backgroundColor: `${themeColor}10` }}>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead style={{ color: themeColor }}>Match</TableHead>
+                    <TableHead style={{ color: themeColor }}>Match Manager</TableHead>
+                    <TableHead style={{ color: themeColor }}>Date / Venue</TableHead>
+                    <TableHead style={{ color: themeColor }}>Status</TableHead>
                     <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filtered.map((m) => (
-                    <TableRow key={m._id || m.id}>
+                    <TableRow 
+                      key={m._id || m.id} 
+                      className="cursor-pointer transition-colors"
+                      style={{ '--hover-bg': `${themeColor}05` }}
+                      onClick={() => navigate(`/match/${encodeId(m._id || m.id)}/match-summary`)}
+                    >
                       <TableCell>
                         <div className="flex flex-col gap-1">
                           <span className="font-semibold text-sm">{m.teamA?.name || "TBA"} <span className="text-muted-foreground font-normal mx-1">vs</span> {m.teamB?.name || "TBA"}</span>
@@ -241,15 +272,22 @@ export default function MatchesPage() {
                         <div className="flex flex-col gap-1">
                           <span className="text-sm">{m.startTime ? new Date(m.startTime).toLocaleDateString() : "TBD"}</span>
                           <span className="text-xs text-muted-foreground">{m.venue || "TBD"}</span>
-                          {m.rescheduleAction && <span className="text-[10px] text-amber-500 font-medium uppercase tracking-wider">{m.rescheduleAction}</span>}
+                          {m.rescheduleAction && (
+                             <span 
+                               className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
+                               style={{ backgroundColor: `${themeColor}15`, color: themeColor }}
+                             >
+                               {m.rescheduleAction}
+                             </span>
+                           )}
                         </div>
                       </TableCell>
                       <TableCell>{getStatusBadge(m)}</TableCell>
-                      <TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreHorizontal className="w-4 h-4" /></Button></DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => navigate(`/scoring/${m._id || m.id}`)}><PlayCircle className="w-4 h-4 mr-2" /> Open Scorecard</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => navigate(`/scoring/${encodeId(m._id || m.id)}`)}><PlayCircle className="w-4 h-4 mr-2" /> Open Scorecard</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => openAssign(m)}><KeyRound className="w-4 h-4 mr-2" /> Assign Scorer</DropdownMenuItem>
                             <DropdownMenuItem onClick={() => generateLink(m)}><LinkIcon className="w-4 h-4 mr-2" /> Copy Scorer Link</DropdownMenuItem>
@@ -269,7 +307,7 @@ export default function MatchesPage() {
       {/* Create */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Schedule Match</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle style={{ color: themeColor }}>Schedule Match</DialogTitle></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -305,7 +343,7 @@ export default function MatchesPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={submitting} className="bg-gradient-to-r from-indigo-500 to-purple-600 text-white">{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Schedule</Button>
+            <Button onClick={handleCreate} disabled={submitting} style={{ backgroundColor: themeColor, color: '#fff' }}>{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Schedule</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -313,7 +351,7 @@ export default function MatchesPage() {
       {/* Assign Scorer */}
       <Dialog open={showAssign} onOpenChange={setShowAssign}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Assign Match Manager</DialogTitle><DialogDescription>Create a dedicated scorer account for this match.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle style={{ color: themeColor }}>Assign Match Manager</DialogTitle><DialogDescription>Create a dedicated scorer account for this match.</DialogDescription></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2"><Label>Name</Label><Input placeholder="Scorer Name" value={assignForm.name} onChange={(e) => setAssignForm({ ...assignForm, name: e.target.value })} /></div>
             <div className="space-y-2"><Label>Email</Label><Input type="email" placeholder="scorer@example.com" value={assignForm.email} onChange={(e) => setAssignForm({ ...assignForm, email: e.target.value })} /></div>
@@ -321,7 +359,7 @@ export default function MatchesPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAssign(false)}>Cancel</Button>
-            <Button onClick={handleAssignManager} disabled={submitting}>{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Assign Scorer</Button>
+             <Button onClick={handleAssignManager} disabled={submitting} style={{ backgroundColor: themeColor, color: '#fff' }}>{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Assign Scorer</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -329,13 +367,13 @@ export default function MatchesPage() {
       {/* Stream URL */}
       <Dialog open={showStream} onOpenChange={setShowStream}>
         <DialogContent>
-          <DialogHeader><DialogTitle>Update Stream URL</DialogTitle><DialogDescription>Add a YouTube or Twitch embed URL.</DialogDescription></DialogHeader>
+          <DialogHeader><DialogTitle style={{ color: themeColor }}>Update Stream URL</DialogTitle><DialogDescription>Add a YouTube or Twitch embed URL.</DialogDescription></DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2"><Label>Stream URL</Label><Input placeholder="https://youtube.com/..." value={streamForm.streamUrl} onChange={(e) => setStreamForm({ ...streamForm, streamUrl: e.target.value })} /></div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowStream(false)}>Cancel</Button>
-            <Button onClick={handleUpdateStream} disabled={submitting}>{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Update Stream</Button>
+             <Button onClick={handleUpdateStream} disabled={submitting} style={{ backgroundColor: themeColor, color: '#fff' }}>{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Update Stream</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

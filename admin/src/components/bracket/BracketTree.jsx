@@ -2,11 +2,14 @@ import { useMemo, useRef, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import BracketNode from "./BracketNode";
 
+import { useAppContext } from "@/hooks/useAppContext";
+
 /**
  * Full tournament bracket tree with SVG connector lines.
  * Renders rounds left-to-right: Round 1 → ... → Final
  */
 export default function BracketTree({ matches, totalRounds, onClickMatch }) {
+  const { themeColor } = useAppContext();
   const containerRef = useRef(null);
   const [nodePositions, setNodePositions] = useState({});
 
@@ -89,8 +92,8 @@ export default function BracketTree({ matches, totalRounds, onClickMatch }) {
         <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 0 }}>
           <defs>
             <linearGradient id="lineGradientActive" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#6366f1" stopOpacity="0.8" />
+              <stop offset="0%" stopColor={themeColor} stopOpacity="0.8" />
+              <stop offset="100%" stopColor={themeColor} stopOpacity="0.8" />
             </linearGradient>
             <linearGradient id="lineGradientLive" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.9" />
@@ -136,9 +139,10 @@ export default function BracketTree({ matches, totalRounds, onClickMatch }) {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: round * 0.1 }}
-                className="mb-6 px-4 py-1.5 rounded-full bg-gradient-to-r from-indigo-500/20 to-purple-500/20 border border-indigo-500/20"
+                className="mb-6 px-4 py-1.5 rounded-full"
+                style={{ backgroundColor: `${themeColor}15`, border: `1px solid ${themeColor}30` }}
               >
-                <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">
+                <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: themeColor }}>
                   {getRoundLabel(round)}
                 </span>
               </motion.div>

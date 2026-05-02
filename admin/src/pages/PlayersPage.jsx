@@ -24,7 +24,7 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0 } };
 const PLAYER_ROLES = ["batsman", "bowler", "allrounder", "wicketkeeper"];
 
 export default function PlayersPage() {
-  const { user, clubId: contextClubId } = useAppContext();
+  const { user, clubId: contextClubId, themeColor } = useAppContext();
   const [clubs, setClubs] = useState([]);
   const [selectedClub, setSelectedClub] = useState(null);
   const [players, setPlayers] = useState([]);
@@ -32,6 +32,7 @@ export default function PlayersPage() {
   const [loading, setLoading] = useState(false);
   const [clubLoading, setClubLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [filterTeam, setFilterTeam] = useState("all");
 
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
@@ -87,7 +88,9 @@ export default function PlayersPage() {
       formData.append("name", form.name);
       formData.append("role", form.role);
       formData.append("clubId", selectedClub);
-      if (form.team) formData.append("teamId", form.team);
+      if (form.team && form.team !== "none") formData.append("teamId", form.team);
+      if (form.jerseyNumber) formData.append("jerseyNumber", form.jerseyNumber);
+      if (form.phone) formData.append("phone", form.phone);
       if (form.photoUrl instanceof File) {
         formData.append("avatar", form.photoUrl);
       } else if (form.photoUrl) {
@@ -110,7 +113,14 @@ export default function PlayersPage() {
       const formData = new FormData();
       formData.append("name", form.name);
       formData.append("role", form.role);
-      if (form.team) formData.append("teamId", form.team);
+      if (form.team && form.team !== "none") {
+        formData.append("teamId", form.team);
+      } else if (form.team === "none") {
+        formData.append("teamId", "");
+      }
+      if (form.jerseyNumber !== undefined) formData.append("jerseyNumber", form.jerseyNumber);
+      if (form.phone !== undefined) formData.append("phone", form.phone);
+      
       if (form.photoUrl instanceof File) {
         formData.append("avatar", form.photoUrl);
       } else if (form.photoUrl) {
@@ -147,14 +157,25 @@ export default function PlayersPage() {
 
   const openEdit = (p) => {
     setSelected(p);
-    setForm({ name: p.name || "", role: p.role || "batsman", jerseyNumber: p.jerseyNumber || "", phone: p.phone || "", photoUrl: p.photoUrl || "", team: p.team?._id || p.team || "" });
+    setForm({ name: p.name || "", role: p.role || "batsman", jerseyNumber: p.jerseyNumber || "", phone: p.phone || "", photoUrl: p.photoUrl || "", team: p.teamId?._id || p.teamId || "none" });
     setShowEdit(true);
   };
 
-  const filtered = players.filter((p) =>
-    (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
-    (p.role || "").toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = players.filter((p) => {
+    const matchesSearch = (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
+                          (p.role || "").toLowerCase().includes(search.toLowerCase());
+    
+    let matchesTeam = true;
+    if (filterTeam !== "all") {
+      if (filterTeam === "unassigned") {
+        matchesTeam = !p.teamId;
+      } else {
+        matchesTeam = (p.teamId?._id || p.teamId) === filterTeam;
+      }
+    }
+    
+    return matchesSearch && matchesTeam;
+  });
 
   const getRoleBadge = (role) => {
     const colors = { batsman: "text-blue-500 bg-blue-500/10", bowler: "text-red-500 bg-red-500/10", allrounder: "text-violet-500 bg-violet-500/10", wicketkeeper: "text-amber-500 bg-amber-500/10" };
@@ -165,10 +186,10 @@ export default function PlayersPage() {
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       <motion.div variants={item} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><UserCircle className="w-6 h-6 text-blue-500" /> Players</h1>
+          <h1 className="text-2xl font-bold text-foreground flex items-center gap-2"><UserCircle className="w-6 h-6" style={{ color: themeColor }} /> Players</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage player database and view stats</p>
         </div>
-        <Button onClick={() => { setForm({ name: "", role: "batsman", jerseyNumber: "", phone: "", photoUrl: "", team: "" }); setShowCreate(true); }} disabled={!selectedClub} className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:opacity-90">
+        <Button onClick={() => { setForm({ name: "", role: "batsman", jerseyNumber: "", phone: "", photoUrl: "", team: "" }); setShowCreate(true); }} disabled={!selectedClub} style={{ backgroundColor: themeColor, color: '#fff' }}>
           <Plus className="w-4 h-4 mr-2" /> Add Player
         </Button>
       </motion.div>
@@ -180,6 +201,14 @@ export default function PlayersPage() {
             <SelectContent>{clubs.map((l) => <SelectItem key={l._id || l.id} value={l._id || l.id}>{l.name}</SelectItem>)}</SelectContent>
           </Select>
         )}
+        <Select value={filterTeam} onValueChange={setFilterTeam}>
+          <SelectTrigger className="w-full sm:w-[200px]"><SelectValue placeholder="All Teams" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Teams</SelectItem>
+            <SelectItem value="unassigned">Unassigned</SelectItem>
+            {teams.map((t) => <SelectItem key={t._id || t.id} value={t._id || t.id}>{t.name}</SelectItem>)}
+          </SelectContent>
+        </Select>
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Search players..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
@@ -211,7 +240,7 @@ export default function PlayersPage() {
                     <TableRow key={p._id || p.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center text-xs font-bold text-blue-600">
+                          <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold" style={{ backgroundColor: `${themeColor}20`, color: themeColor }}>
                             {p.photoUrl ? <img src={p.photoUrl} alt="" className="w-9 h-9 rounded-full object-cover" /> : (p.name || "?")[0]}
                           </div>
                           <div>
@@ -223,7 +252,7 @@ export default function PlayersPage() {
                       <TableCell>
                         <Badge className={`capitalize text-xs ${getRoleBadge(p.role)}`}>{p.role || "—"}</Badge>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{p.team?.name || "Unassigned"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{p.teamId?.name || "Unassigned"}</TableCell>
                       <TableCell><Badge variant="outline" className="font-mono text-xs">#{p.jerseyNumber || "—"}</Badge></TableCell>
                       <TableCell>
                         <DropdownMenu>
@@ -265,9 +294,12 @@ export default function PlayersPage() {
             </div>
             <div className="space-y-2">
               <Label>Team (optional)</Label>
-              <Select value={form.team} onValueChange={(v) => setForm({ ...form, team: v })}>
+              <Select value={form.team || "none"} onValueChange={(v) => setForm({ ...form, team: v })}>
                 <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
-                <SelectContent>{teams.map((t) => <SelectItem key={t._id || t.id} value={t._id || t.id}>{t.name}</SelectItem>)}</SelectContent>
+                <SelectContent>
+                  <SelectItem value="none">Unassigned</SelectItem>
+                  {teams.map((t) => <SelectItem key={t._id || t.id} value={t._id || t.id}>{t.name}</SelectItem>)}
+                </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
@@ -282,7 +314,7 @@ export default function PlayersPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={submitting} className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Add Player</Button>
+            <Button onClick={handleCreate} disabled={submitting} style={{ backgroundColor: themeColor, color: '#fff' }}>{submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Add Player</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -299,6 +331,16 @@ export default function PlayersPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2"><Label>Jersey #</Label><Input value={form.jerseyNumber} onChange={(e) => setForm({ ...form, jerseyNumber: e.target.value })} /></div>
               <div className="space-y-2"><Label>Phone</Label><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+            </div>
+            <div className="space-y-2">
+              <Label>Team (optional)</Label>
+              <Select value={form.team || "none"} onValueChange={(v) => setForm({ ...form, team: v })}>
+                <SelectTrigger><SelectValue placeholder="Select team" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Unassigned</SelectItem>
+                  {teams.map((t) => <SelectItem key={t._id || t.id} value={t._id || t.id}>{t.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Player Photo</Label>

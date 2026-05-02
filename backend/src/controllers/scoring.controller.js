@@ -22,7 +22,26 @@ const resumeMatch = async (req, res, next) => {
   try {
     const performedBy = { id: req.user._id, role: req.userRole };
     const result = await scoringService.resumeMatch(req.params.id, performedBy);
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`match_${req.params.id}`).emit('match_resumed', result);
+    }
     res.json(ApiResponse.ok(result, 'Match resumed'));
+  } catch (error) {
+    next(error);
+  }
+};
+
+const pauseMatch = async (req, res, next) => {
+  try {
+    const performedBy = { id: req.user._id, role: req.userRole };
+    const reason = req.body?.reason || '';
+    const result = await scoringService.pauseMatch(req.params.id, reason, performedBy);
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`match_${req.params.id}`).emit('match_paused', result);
+    }
+    res.json(ApiResponse.ok(result, 'Match paused'));
   } catch (error) {
     next(error);
   }
@@ -177,6 +196,7 @@ const getAuditLogs = async (req, res, next) => {
 module.exports = {
   startMatch,
   resumeMatch,
+  pauseMatch,
   addScore,
   addWicket,
   addExtra,

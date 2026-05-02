@@ -3,8 +3,10 @@ import { motion } from "framer-motion";
 import { Clock, Calendar as CalendarIcon, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useAppContext } from "@/hooks/useAppContext";
 
 export default function LeagueTimeline({ matches }) {
+  const { themeColor } = useAppContext();
   // Group matches by date/week
   const groupedMatches = useMemo(() => {
     if (!matches || matches.length === 0) return {};
@@ -56,7 +58,7 @@ export default function LeagueTimeline({ matches }) {
               {/* Date Header */}
               <div className="md:w-48 flex-shrink-0 flex items-start pt-2 gap-3 relative z-10">
                 <div className="w-14 h-14 rounded-2xl bg-card border border-border shadow-sm flex flex-col items-center justify-center shrink-0">
-                  <CalendarIcon className="w-5 h-5 text-indigo-400 mb-1" />
+                  <CalendarIcon className="w-5 h-5 mb-1" style={{ color: themeColor }} />
                 </div>
                 <div className="pt-1">
                   <h3 className="font-bold text-foreground text-sm leading-tight">{date}</h3>
@@ -74,7 +76,7 @@ export default function LeagueTimeline({ matches }) {
                   let statusBadge = <Badge variant="outline" className="text-muted-foreground bg-background">Unscheduled</Badge>;
                   if (match.status === 'completed') statusBadge = <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Completed</Badge>;
                   if (match.status === 'live') statusBadge = <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 animate-pulse">Live Now</Badge>;
-                  if (match.status === 'upcoming') statusBadge = <Badge className="bg-indigo-500/20 text-indigo-400 border-indigo-500/30">Upcoming</Badge>;
+                  if (match.status === 'upcoming') statusBadge = <Badge style={{ backgroundColor: `${themeColor}20`, color: themeColor, borderColor: `${themeColor}30` }}>Upcoming</Badge>;
 
                   const isAWinner = winnerId && String(winnerId) === String(teamA?._id || teamA?.id);
                   const isBWinner = winnerId && String(winnerId) === String(teamB?._id || teamB?.id);
